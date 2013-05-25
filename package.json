@@ -1,0 +1,15 @@
+{
+  "name": "ftp-deploy",
+  "version": "0.1.0",
+  "author": "Rick Bergfalk <rick.bergfalk@gmail.com> (http://rickbergfalk.com/)",
+  "description": "Ftp a folder from your local disk to an ftp destination. Does not delete from destination directory. Derived from grunt-ftp-deploy",
+  "keywords": [
+	"ftp",
+	"deploy"
+  ],
+  "dependencies": {
+    "jsftp": "0.5.x",
+    "async": "0.2.x"
+  },
+  "main": "ftp-deploy"
+}
