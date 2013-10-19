@@ -18,9 +18,9 @@ var FtpDeployer = function () {
 	
 	var thisDeployer = this;
 
-  this.toTransfer;
-  this.transfered = 0;
-  this.total = 0;
+	this.toTransfer;
+	this.transferred = 0;
+	this.total = 0;
 	var ftp;
 	var localRoot;
 	var remoteRoot;
@@ -93,7 +93,7 @@ var FtpDeployer = function () {
 			if(err) {
 				cb(err);
 			} else {
-        thisDeployer.transfered++;
+				thisDeployer.transferred++;
 				thisDeployer.emit('uploaded', path.join(currPath, inFilename));
 				cb();
 			}
@@ -145,8 +145,8 @@ var FtpDeployer = function () {
 				// Iterating through all location from the `localRoot` in parallel
 				var locations = Object.keys(thisDeployer.toTransfer);
 
-        // store total number of files to transfer
-        thisDeployer.total = locations.length;
+				// store total number of files to transfer
+				thisDeployer.total = locations.length;
 
 				async.forEachSeries(locations, ftpProcessLocation, function() {
 					ftp.raw.quit(function(err) {
