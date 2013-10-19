@@ -15,5 +15,11 @@
     "type": "git", 
     "url": "git://github.com/rickbergfalk/ftp-deploy"
   },
+  "contributors": [ 
+    {
+      "name": "Ondrej",
+      "url": "https://github.com/der-On"
+    } 
+  ],
   "main": "ftp-deploy"
 }
