@@ -7,7 +7,7 @@ A Node.js package.
 
 ## Usage
 
-```
+```js
 var ftpDeploy = new require('ftp-deploy')();
 
 var config = {
