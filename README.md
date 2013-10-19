@@ -8,7 +8,8 @@ A Node.js package.
 ## Usage
 
 ```js
-var ftpDeploy = new require('ftp-deploy')();
+var FtpDeploy = require('ftp-deploy');
+var ftpDeploy = new FtpDeploy();
 
 var config = {
 	username: "username",
