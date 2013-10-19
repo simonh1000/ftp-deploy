@@ -35,7 +35,9 @@ ftpDeploy.on('uploaded', function(relativeFilePath) {
 	console.log('uploaded ' + relativeFilePath);
 });
 ```
+## Changes in 0.2.0
 
+Starting with 0.2, requiring ftp-deploy returns the FtpDeploy object, and you will need to instantiate is separately on your own.
 
 ## Installation
 
