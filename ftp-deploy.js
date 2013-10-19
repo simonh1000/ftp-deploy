@@ -17,8 +17,10 @@ var FtpDeployer = function () {
 	events.EventEmitter.call(this);
 	
 	var thisDeployer = this;
-	
-	var toTransfer;
+
+  this.toTransfer;
+  this.transfered = 0;
+  this.total = 0;
 	var ftp;
 	var localRoot;
 	var remoteRoot;
@@ -91,6 +93,7 @@ var FtpDeployer = function () {
 			if(err) {
 				cb(err);
 			} else {
+        thisDeployer.transfered++;
 				thisDeployer.emit('uploaded', path.join(currPath, inFilename));
 				cb();
 			}
@@ -99,7 +102,7 @@ var FtpDeployer = function () {
 
 	// A method that processes a location - changes to a folder and uploads all respective files
 	function ftpProcessLocation (inPath, cb) {
-		if (!toTransfer[inPath]) {
+		if (!thisDeployer.toTransfer[inPath]) {
 			cb(new Error('Data for ' + inPath + ' not found'));
 		} else {
 			ftpCwd(remoteRoot + '/' + inPath.replace(/\\/gi, '/'), function (err) {
@@ -108,7 +111,7 @@ var FtpDeployer = function () {
 				} else {
 					var files;
 					currPath = inPath;
-					files = toTransfer[inPath];
+					files = thisDeployer.toTransfer[inPath];
 					async.forEach(files, ftpPut, function (err) {
 						if (err) {
 							console.error('Failed uploading files!');
@@ -132,15 +135,19 @@ var FtpDeployer = function () {
 		remoteRoot = config.remoteRoot;
 
 		ftp.useList = true;
-		toTransfer = dirParseSync(localRoot);
-		
+		thisDeployer.toTransfer = dirParseSync(localRoot);
+
 		// Authentication and main processing of files
 		ftp.auth(config.username, config.password, function(err) {
 			if (err) {
 				cb(err);
 			} else {
 				// Iterating through all location from the `localRoot` in parallel
-				var locations = Object.keys(toTransfer);
+				var locations = Object.keys(thisDeployer.toTransfer);
+
+        // store total number of files to transfer
+        thisDeployer.total = locations.length;
+
 				async.forEachSeries(locations, ftpProcessLocation, function() {
 					ftp.raw.quit(function(err) {
 						cb(err);
@@ -157,5 +164,5 @@ util.inherits(FtpDeployer, events.EventEmitter);
 
 // commonJS module systems
 if (typeof module !== 'undefined' && "exports" in module) {
-	module.exports = new FtpDeployer();
+	module.exports = FtpDeployer;
 }
