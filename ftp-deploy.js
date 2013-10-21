@@ -24,7 +24,7 @@ var FtpDeployer = function () {
 	var ftp;
 	var localRoot;
 	var remoteRoot;
-	var parallelUploads = 10;
+	var parallelUploads = 0;
 	var currPath;
 	var authVals;
 
