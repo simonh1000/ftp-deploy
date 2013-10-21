@@ -24,7 +24,7 @@ var FtpDeployer = function () {
 	var ftp;
 	var localRoot;
 	var remoteRoot;
-  var parallelUploads = 10;
+	var parallelUploads = 10;
 	var currPath;
 	var authVals;
 
@@ -64,8 +64,8 @@ var FtpDeployer = function () {
 				}
 				result[tmpPath].push(files[i]);
 
-        // increase total file count
-        thisDeployer.total++;
+				// increase total file count
+				thisDeployer.total++;
 			}
 		}
 		
@@ -74,10 +74,10 @@ var FtpDeployer = function () {
 
 	// A method for changing the remote working directory and creating one if it doesn't already exist
 	function ftpCwd(inPath, cb) {
-    // add leading slash if it is missing
-    if (inPath.charAt(0) !== '/') {
-      inPath = '/' + inPath;
-    }
+		// add leading slash if it is missing
+		if (inPath.charAt(0) !== '/') {
+			inPath = '/' + inPath;
+		}
 
 		ftp.raw.cwd(inPath, function(err) {
 			if (err) {
@@ -142,7 +142,7 @@ var FtpDeployer = function () {
 
 		localRoot = config.localRoot;
 		remoteRoot = config.remoteRoot;
-    parallelUploads = config.parallelUploads || parallelUploads;
+		parallelUploads = config.parallelUploads || parallelUploads;
 
 		ftp.useList = true;
 		thisDeployer.toTransfer = dirParseSync(localRoot);
