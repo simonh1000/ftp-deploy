@@ -33,12 +33,16 @@ ftpDeploy.on('uploading', function(relativeFilePath) {
 	console.log('uploading ' + relativeFilePath);
 });
 ftpDeploy.on('uploaded', function(relativeFilePath) {
-	console.log('uploaded ' + relativeFilePath);
+	var percentTransferred = Math.round((ftpDeploy.transferred/ftpDeploy.total) * 100);
+	console.log(percentTransferred + '% uploaded   ' + relativeFilePath);
 });
 ```
-## Changes in 0.2.0
+## Changes in 0.2.x
 
-Starting with 0.2, requiring ftp-deploy returns the FtpDeploy object, and you will need to instantiate is separately on your own.
+- Requiring ftp-deploy returns the FtpDeploy object, and you will need to instantiate is separately on your own.
+- New config setting **paralleluploads**: sets number of  parallelUploads (within a specific folder)
+- ftpDeploy instance has properties **transferred** and **total**. Useful for determining progress based on file count.
+
 
 ## Installation
 
