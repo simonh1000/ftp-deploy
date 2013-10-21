@@ -24,7 +24,7 @@ var FtpDeployer = function () {
 	var ftp;
 	var localRoot;
 	var remoteRoot;
-	var parallelUploads = 0;
+	var parallelUploads = 1;
 	var currPath;
 	var authVals;
 
@@ -97,15 +97,21 @@ var FtpDeployer = function () {
 	// A method for uploading a single file
 	function ftpPut(inFilename, cb) {
 		thisDeployer.emit('uploading', path.join(currPath, inFilename));
-		var fileData = fs.readFileSync(path.join(localRoot, currPath, inFilename));
-		ftp.put(inFilename, fileData, function(err) {
-			if(err) {
+		var fullPathName = path.join(localRoot, currPath, inFilename);
+		fs.readFile(fullPathName, function (err, fileData) {
+			if (err) {
 				cb(err);
 			} else {
-				thisDeployer.transferred++;
-				thisDeployer.emit('uploaded', path.join(currPath, inFilename));
-				cb();
-			}
+				ftp.put(inFilename, fileData, function(err) {
+					if(err) {
+						cb(err);
+					} else {
+						thisDeployer.transferred++;
+						thisDeployer.emit('uploaded', path.join(currPath, inFilename));
+						cb();
+					}
+				});
+			}	
 		});
 	}
 
