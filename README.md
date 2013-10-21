@@ -17,7 +17,8 @@ var config = {
 	host: "ftp.someserver.com",
 	port: 21,
 	localRoot: __dirname + "/local-folder",
-	remoteRoot: "/public_html/remote-folder/"
+	remoteRoot: "/public_html/remote-folder/",
+	parallelUploads: 10
 }
 	
 ftpDeploy.deploy(config, function(err) {
