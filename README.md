@@ -8,7 +8,8 @@ A Node.js package.
 ## Usage
 
 ```
-var ftpDeploy = new require('ftp-deploy')();
+var FtpDeploy = require('ftp-deploy');
+var ftpDeploy = new FtpDeploy();
 
 var config = {
 	username: "username",
@@ -16,7 +17,8 @@ var config = {
 	host: "ftp.someserver.com",
 	port: 21,
 	localRoot: __dirname + "/local-folder",
-	remoteRoot: "/public_html/remote-folder/"
+	remoteRoot: "/public_html/remote-folder/",
+	parallelUploads: 10
 }
 	
 ftpDeploy.deploy(config, function(err) {

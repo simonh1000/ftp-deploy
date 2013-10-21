@@ -24,6 +24,7 @@ var FtpDeployer = function () {
 	var ftp;
 	var localRoot;
 	var remoteRoot;
+  var parallelUploads = 10;
 	var currPath;
 	var authVals;
 
@@ -62,6 +63,9 @@ var FtpDeployer = function () {
 					tmpPath = path.sep;
 				}
 				result[tmpPath].push(files[i]);
+
+        // increase total file count
+        thisDeployer.total++;
 			}
 		}
 		
@@ -70,6 +74,11 @@ var FtpDeployer = function () {
 
 	// A method for changing the remote working directory and creating one if it doesn't already exist
 	function ftpCwd(inPath, cb) {
+    // add leading slash if it is missing
+    if (inPath.charAt(0) !== '/') {
+      inPath = '/' + inPath;
+    }
+
 		ftp.raw.cwd(inPath, function(err) {
 			if (err) {
 				ftp.raw.mkd(inPath, function(err) {
@@ -112,7 +121,7 @@ var FtpDeployer = function () {
 					var files;
 					currPath = inPath;
 					files = thisDeployer.toTransfer[inPath];
-					async.forEach(files, ftpPut, function (err) {
+					async.mapLimit(files, parallelUploads, ftpPut, function (err) {
 						if (err) {
 							console.error('Failed uploading files!');
 						}
@@ -133,6 +142,7 @@ var FtpDeployer = function () {
 
 		localRoot = config.localRoot;
 		remoteRoot = config.remoteRoot;
+    parallelUploads = config.parallelUploads || parallelUploads;
 
 		ftp.useList = true;
 		thisDeployer.toTransfer = dirParseSync(localRoot);
@@ -145,10 +155,7 @@ var FtpDeployer = function () {
 				// Iterating through all location from the `localRoot` in parallel
 				var locations = Object.keys(thisDeployer.toTransfer);
 
-        // store total number of files to transfer
-        thisDeployer.total = locations.length;
-
-				async.forEachSeries(locations, ftpProcessLocation, function() {
+        async.mapSeries(locations, ftpProcessLocation, function() {
 					ftp.raw.quit(function(err) {
 						cb(err);
 					});
