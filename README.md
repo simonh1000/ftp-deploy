@@ -18,7 +18,8 @@ var config = {
 	port: 21,
 	localRoot: __dirname + "/local-folder",
 	remoteRoot: "/public_html/remote-folder/",
-	parallelUploads: 10
+	parallelUploads: 10,
+	exclude: ['.git', '.idea', 'tmp/*']
 }
 	
 ftpDeploy.deploy(config, function(err) {
