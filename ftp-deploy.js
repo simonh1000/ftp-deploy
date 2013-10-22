@@ -4,6 +4,7 @@ var util = require('util');
 var events = require('events');
 var Ftp = require('jsftp');
 var async = require('async');
+var minimatch = require("minimatch")
 
 // A utility function to remove lodash/underscore dependency
 // Checks an obj for a specified key
@@ -19,14 +20,27 @@ var FtpDeployer = function () {
 	var thisDeployer = this;
 
 	this.toTransfer;
-	this.transferred = 0;
+	this.transfered = 0;
 	this.total = 0;
 	var ftp;
 	var localRoot;
 	var remoteRoot;
 	var parallelUploads = 1;
+  var exclude = [];
 	var currPath;
 	var authVals;
+
+  function canIncludeFile(filePath) {
+    if (exclude.length > 0) {
+      for(var i = 0; i < exclude.length; i++) {
+        if (minimatch(filePath, exclude[i], {matchBase: true})) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
 
 	// A method for parsing the source location and storing the information into a suitably formated object
 	function dirParseSync(startDir, result) {
@@ -53,19 +67,27 @@ var FtpDeployer = function () {
 
 			if (fs.statSync(currFile).isDirectory()) {
 				tmpPath = path.relative(localRoot, currFile);
-				if (!has(result, tmpPath)) {
-					result[tmpPath] = [];
-				}
-				dirParseSync(currFile, result);
+
+        // check exclude rules
+        if (canIncludeFile(tmpPath)) {
+          if (!has(result, tmpPath)) {
+            result[tmpPath] = [];
+          }
+          dirParseSync(currFile, result);
+        }
 			} else {
 				tmpPath = path.relative(localRoot, startDir);
 				if (!tmpPath.length) {
 					tmpPath = path.sep;
 				}
-				result[tmpPath].push(files[i]);
 
-				// increase total file count
-				thisDeployer.total++;
+        // check exclude rules
+        if (canIncludeFile(path.join(tmpPath, files[i]))) {
+          result[tmpPath].push(files[i]);
+
+          // increase total file count
+          thisDeployer.total++;
+        }
 			}
 		}
 		
@@ -106,7 +128,7 @@ var FtpDeployer = function () {
 					if(err) {
 						cb(err);
 					} else {
-						thisDeployer.transferred++;
+						thisDeployer.transfered++;
 						thisDeployer.emit('uploaded', path.join(currPath, inFilename));
 						cb();
 					}
@@ -149,6 +171,7 @@ var FtpDeployer = function () {
 		localRoot = config.localRoot;
 		remoteRoot = config.remoteRoot;
 		parallelUploads = config.parallelUploads || parallelUploads;
+    exclude = config.exclude || exclude;
 
 		ftp.useList = true;
 		thisDeployer.toTransfer = dirParseSync(localRoot);

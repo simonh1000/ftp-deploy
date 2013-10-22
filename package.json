@@ -9,7 +9,8 @@
   ],
   "dependencies": {
     "jsftp": "0.5.x",
-    "async": "0.2.x"
+    "async": "0.2.x",
+    "minimatch": "0.2.12"
   },
   "repository" : {
     "type": "git", 
