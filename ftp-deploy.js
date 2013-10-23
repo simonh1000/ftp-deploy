@@ -20,7 +20,7 @@ var FtpDeployer = function () {
 	var thisDeployer = this;
 
 	this.toTransfer;
-	this.transfered = 0;
+	this.transferred = 0;
 	this.total = 0;
 	var ftp;
 	var localRoot;
@@ -128,7 +128,7 @@ var FtpDeployer = function () {
 					if(err) {
 						cb(err);
 					} else {
-						thisDeployer.transfered++;
+						thisDeployer.transferred++;
 						thisDeployer.emit('uploaded', path.join(currPath, inFilename));
 						cb();
 					}
