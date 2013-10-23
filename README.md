@@ -38,11 +38,17 @@ ftpDeploy.on('uploaded', function(relativeFilePath) {
 	console.log(percentTransferred + '% uploaded   ' + relativeFilePath);
 });
 ```
-## Changes in 0.2.x
 
-- Requiring ftp-deploy returns the FtpDeploy object, and you will need to instantiate is separately on your own.
-- New config setting **paralleluploads**: sets number of  parallelUploads (within a specific folder)
-- ftpDeploy instance has properties **transferred** and **total**. Useful for determining progress based on file count.
+
+## Changes
+
+- 0.3.x
+	- New config setting **exclude** can be used to exclude folders/files from the ftp deploy process
+
+- 0.2.x
+    - Requiring ftp-deploy returns the FtpDeploy object, and you will need to instantiate is separately on your own.
+    - New config setting **paralleluploads**: sets number of  parallelUploads (within a specific folder)
+    - ftpDeploy instance has properties **transferred** and **total**. Useful for determining progress based on file count.
 
 
 ## Installation
