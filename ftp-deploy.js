@@ -96,10 +96,10 @@ var FtpDeployer = function () {
 
 	// A method for changing the remote working directory and creating one if it doesn't already exist
 	function ftpCwd(inPath, cb) {
-	
-		ftp.raw.cwd(inPath, function(err) {
+	   var wrdir = path.basename(inPath);
+		ftp.raw.cwd(wrdir, function(err) {
 			if (err) {
-				ftp.raw.mkd(inPath, function(err) {
+              	ftp.raw.mkd(wrdir, function(err) {
 					if(err) {
 						cb(err);
 					} else {
@@ -120,7 +120,8 @@ var FtpDeployer = function () {
 			if (err) {
 				cb(err);
 			} else {
-				ftp.put(inFilename, fileData, function(err) {
+                console.log('FileName', inFilename);
+				ftp.put(inFilename.replace(/\\/gi, '/'), fileData, function(err) {
 					if(err) {
 						cb(err);
 					} else {
@@ -135,18 +136,16 @@ var FtpDeployer = function () {
 
 	// A method that processes a location - changes to a folder and uploads all respective files
 	function ftpProcessLocation (inPath, cb) {
-		inPath = path.normalize(inPath);
 		if (!thisDeployer.toTransfer[inPath]) {
 			cb(new Error('Data for ' + inPath + ' not found'));
 		} else {
-			ftpCwd(path.normalize(remoteRoot + '/' + inPath), function (err) {
+			ftpCwd(remoteRoot + '/' + inPath.replace(/\\/gi, '/'), function (err) {
 				if (err) {
 					cb(err);
 				} else {
 					var files;
 					currPath = inPath;
 					files = thisDeployer.toTransfer[inPath];
-					console.log('Files', files);
 					async.mapLimit(files, parallelUploads, ftpPut, function (err) {
 						if (err) {
 							console.error('Failed uploading files!');
@@ -166,7 +165,7 @@ var FtpDeployer = function () {
 			port: config.port
 		});
 
-		localRoot = config.localRoot;
+		localRoot = config.localRoot; 
 		remoteRoot = config.remoteRoot;
 		parallelUploads = config.parallelUploads || parallelUploads;
     exclude = config.exclude || exclude;
@@ -181,6 +180,7 @@ var FtpDeployer = function () {
 			} else {
 				// Iterating through all location from the `localRoot` in parallel
 				var locations = Object.keys(thisDeployer.toTransfer);
+
 				async.mapSeries(locations, ftpProcessLocation, function() {
 					ftp.raw.quit(function(err) {
 						cb(err);
