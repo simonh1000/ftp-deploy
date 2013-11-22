@@ -26,21 +26,21 @@ var FtpDeployer = function () {
 	var localRoot;
 	var remoteRoot;
 	var parallelUploads = 1;
-  var exclude = [];
+	var exclude = [];
 	var currPath;
 	var authVals;
 
-  function canIncludeFile(filePath) {
-    if (exclude.length > 0) {
-      for(var i = 0; i < exclude.length; i++) {
-        if (minimatch(filePath, exclude[i], {matchBase: true})) {
-          return false;
-        }
-      }
-    }
-
-    return true;
-  }
+	function canIncludeFile(filePath) {
+		if (exclude.length > 0) {
+			for(var i = 0; i < exclude.length; i++) {
+				if (minimatch(filePath, exclude[i], {matchBase: true})) {
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
 
 	// A method for parsing the source location and storing the information into a suitably formated object
 	function dirParseSync(startDir, result) {
@@ -68,26 +68,26 @@ var FtpDeployer = function () {
 			if (fs.statSync(currFile).isDirectory()) {
 				tmpPath = path.relative(localRoot, currFile);
 
-        // check exclude rules
-        if (canIncludeFile(tmpPath)) {
-          if (!has(result, tmpPath)) {
-            result[tmpPath] = [];
-          }
-          dirParseSync(currFile, result);
-        }
+				// check exclude rules
+				if (canIncludeFile(tmpPath)) {
+					if (!has(result, tmpPath)) {
+						result[tmpPath] = [];
+					}
+					dirParseSync(currFile, result);
+				}
 			} else {
 				tmpPath = path.relative(localRoot, startDir);
 				if (!tmpPath.length) {
 					tmpPath = path.sep;
 				}
-
-        // check exclude rules
-        if (canIncludeFile(path.join(tmpPath, files[i]))) {
-          result[tmpPath].push(files[i]);
-
-          // increase total file count
-          thisDeployer.total++;
-        }
+				
+				// check exclude rules
+				if (canIncludeFile(path.join(tmpPath, files[i]))) {
+					result[tmpPath].push(files[i]);
+					
+					// increase total file count
+					thisDeployer.total++;
+				}
 			}
 		}
 		
@@ -96,7 +96,7 @@ var FtpDeployer = function () {
 
 	// A method for changing the remote working directory and creating one if it doesn't already exist
 	function ftpCwd(inPath, cb) {
-	   var wrdir = path.basename(inPath);
+		var wrdir = path.basename(inPath);
 		ftp.raw.cwd(wrdir, function(err) {
 			if (err) {
               	ftp.raw.mkd(wrdir, function(err) {
@@ -168,7 +168,7 @@ var FtpDeployer = function () {
 		localRoot = config.localRoot; 
 		remoteRoot = config.remoteRoot;
 		parallelUploads = config.parallelUploads || parallelUploads;
-    exclude = config.exclude || exclude;
+		exclude = config.exclude || exclude;
 
 		ftp.useList = true;
 		thisDeployer.toTransfer = dirParseSync(localRoot);
