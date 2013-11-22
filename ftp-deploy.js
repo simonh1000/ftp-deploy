@@ -120,7 +120,7 @@ var FtpDeployer = function () {
 			if (err) {
 				cb(err);
 			} else {
-                console.log('FileName', inFilename);
+                //console.log('FileName', inFilename);
 				ftp.put(inFilename.replace(/\\/gi, '/'), fileData, function(err) {
 					if(err) {
 						cb(err);
