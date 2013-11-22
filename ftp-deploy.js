@@ -96,11 +96,24 @@ var FtpDeployer = function () {
 
 	// A method for changing the remote working directory and creating one if it doesn't already exist
 	function ftpCwd(inPath, cb) {
+		// add leading slash if it is missing
+		if (inPath.charAt(0) !== '/') {
+			inPath = '/' + inPath;
+		}
+		console.log("inPath pre-replace: " + inPath);
+		// remove double // if present
+		inPath = inPath.replace(/\/\//g, "/");
+		
 		var wrdir = path.basename(inPath);
-		ftp.raw.cwd(wrdir, function(err) {
+		console.log("inPath:             " + inPath);
+		console.log("inPath normalized:  " + path.normalize(inPath));
+		console.log("wrdir:              " + wrdir);
+		ftp.raw.cwd(inPath, function(err) {
 			if (err) {
-              	ftp.raw.mkd(wrdir, function(err) {
+				console.log(err);
+              	ftp.raw.mkd(inPath, function(err) {
 					if(err) {
+						console.log(err);
 						cb(err);
 					} else {
 						ftpCwd(inPath, cb);
@@ -123,6 +136,7 @@ var FtpDeployer = function () {
                 //console.log('FileName', inFilename);
 				ftp.put(inFilename.replace(/\\/gi, '/'), fileData, function(err) {
 					if(err) {
+						console.error(err);
 						cb(err);
 					} else {
 						thisDeployer.transferred++;
@@ -141,6 +155,7 @@ var FtpDeployer = function () {
 		} else {
 			ftpCwd(remoteRoot + '/' + inPath.replace(/\\/gi, '/'), function (err) {
 				if (err) {
+					console.error(err);
 					cb(err);
 				} else {
 					var files;
