@@ -100,20 +100,19 @@ var FtpDeployer = function () {
 		if (inPath.charAt(0) !== '/') {
 			inPath = '/' + inPath;
 		}
-		console.log("inPath pre-replace: " + inPath);
+		//console.log("inPath pre-replace: " + inPath);
 		// remove double // if present
 		inPath = inPath.replace(/\/\//g, "/");
 		
 		var wrdir = path.basename(inPath);
-		console.log("inPath:             " + inPath);
-		console.log("inPath normalized:  " + path.normalize(inPath));
-		console.log("wrdir:              " + wrdir);
+		//console.log("inPath:             " + inPath);
+		//console.log("inPath normalized:  " + path.normalize(inPath));
+		//console.log("wrdir:              " + wrdir);
 		ftp.raw.cwd(inPath, function(err) {
 			if (err) {
-				console.log(err);
               	ftp.raw.mkd(inPath, function(err) {
 					if(err) {
-						console.log(err);
+						//console.log(err);
 						cb(err);
 					} else {
 						ftpCwd(inPath, cb);
@@ -136,7 +135,7 @@ var FtpDeployer = function () {
                 //console.log('FileName', inFilename);
 				ftp.put(inFilename.replace(/\\/gi, '/'), fileData, function(err) {
 					if(err) {
-						console.error(err);
+						//console.error(err);
 						cb(err);
 					} else {
 						thisDeployer.transferred++;
@@ -155,17 +154,14 @@ var FtpDeployer = function () {
 		} else {
 			ftpCwd(remoteRoot + '/' + inPath.replace(/\\/gi, '/'), function (err) {
 				if (err) {
-					console.error(err);
+					//console.error(err);
 					cb(err);
 				} else {
 					var files;
 					currPath = inPath;
 					files = thisDeployer.toTransfer[inPath];
 					async.mapLimit(files, parallelUploads, ftpPut, function (err) {
-						if (err) {
-							console.error('Failed uploading files!');
-						}
-						cb(null);
+						cb(err);
 					});
 				}
 			});
@@ -195,11 +191,14 @@ var FtpDeployer = function () {
 			} else {
 				// Iterating through all location from the `localRoot` in parallel
 				var locations = Object.keys(thisDeployer.toTransfer);
-
-				async.mapSeries(locations, ftpProcessLocation, function() {
-					ftp.raw.quit(function(err) {
+				async.mapSeries(locations, ftpProcessLocation, function(err) {
+					if (err) {
 						cb(err);
-					});
+					} else {
+						ftp.raw.quit(function(err) {
+							cb(err);
+						});
+					}
 				});
 			}
 		});
