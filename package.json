@@ -16,6 +16,9 @@
     "type": "git", 
     "url": "git://github.com/rickbergfalk/ftp-deploy"
   },
+  "bugs" : {
+    "url": "https://github.com/rickbergfalk/ftp-deploy/issues"
+  },
   "contributors": [ 
     {
       "name": "Ondrej",
