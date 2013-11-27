@@ -8,7 +8,7 @@
 	"deploy"
   ],
   "dependencies": {
-    "jsftp": "0.5.x",
+    "jsftp": "0.6.x",
     "async": "0.2.x",
     "minimatch": "0.2.12"
   },
