@@ -27,20 +27,24 @@ ftpDeploy.deploy(config, function(err) {
 	else console.log('finished');
 });
 
-// if you want to be notified of what ftpDeploy is doing
-// listen to some of the events it's emitting
-// Want more events? Let me know and I'll add them.
-ftpDeploy.on('uploading', function(relativeFilePath) {
-	console.log('uploading ' + relativeFilePath);
+// to be notified of what ftpDeploy is doing
+ftpDeploy.on('uploading', function(data) {
+    data.totalFileCount;       // total file count being transferred
+    data.transferredFileCount; // number of files transferred
+    data.percentComplete;      // percent as a number 1 - 100
+    data.filename;             // filename being uploaded
+    data.relativePath;         // relative path to file being uploaded from local root location
 });
-ftpDeploy.on('uploaded', function(relativeFilePath) {
-	var percentTransferred = Math.round((ftpDeploy.transferred/ftpDeploy.total) * 100);
-	console.log(percentTransferred + '% uploaded   ' + relativeFilePath);
+ftpDeploy.on('uploaded', function(data) {
+	console.log(data);         // same data as uploading event
 });
 ```
 
 
 ## Changes
+
+- 0.4.x
+    - uploading and uploaded events emit data instead of a relative file path.
 
 - 0.3.x
 	- New config setting **exclude** can be used to exclude folders/files from the ftp deploy process
