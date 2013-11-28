@@ -126,10 +126,19 @@ var FtpDeployer = function () {
 
 	// A method for uploading a single file
 	function ftpPut(inFilename, cb) {
-		thisDeployer.emit('uploading', path.join(currPath, inFilename));
+        
+        var emitData = {
+            totalFileCount: thisDeployer.total,
+            transferredFileCount: thisDeployer.transferred,
+            percentComplete: Math.round((thisDeployer.transferred / thisDeployer.total) * 100),
+            filename: inFilename,
+            relativePath: currPath
+        };
+        
+		thisDeployer.emit('uploading', emitData);
 		var fullPathName = path.join(localRoot, currPath, inFilename);
 		fs.readFile(fullPathName, function (err, fileData) {
-			if (err) {
+			if (err) { 
 				cb(err);
 			} else {
                 //console.log('FileName', inFilename);
@@ -139,7 +148,8 @@ var FtpDeployer = function () {
 						cb(err);
 					} else {
 						thisDeployer.transferred++;
-						thisDeployer.emit('uploaded', path.join(currPath, inFilename));
+                        emitData.transferredFileCount = thisDeployer.transferred;
+						thisDeployer.emit('uploaded', emitData);
 						cb();
 					}
 				});
