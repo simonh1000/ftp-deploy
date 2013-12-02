@@ -65,7 +65,7 @@ var FtpDeployer = function () {
 		for (i = 0; i < files.length; i++) {
 			currFile = path.join(startDir, files[i]);
 
-			if (fs.statSync(currFile).isDirectory()) {
+			if (fs.lstatSync(currFile).isDirectory()) {
 				tmpPath = path.relative(localRoot, currFile);
 
 				// check exclude rules
