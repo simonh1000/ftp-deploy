@@ -7,6 +7,8 @@ A Node.js package.
 
 ## Usage
 
+The most basic usage (stops uploading when an error occurs):
+
 ```js
 var FtpDeploy = require('ftp-deploy');
 var ftpDeploy = new FtpDeploy();
@@ -18,7 +20,6 @@ var config = {
 	port: 21,
 	localRoot: __dirname + "/local-folder",
 	remoteRoot: "/public_html/remote-folder/",
-	parallelUploads: 10,
 	exclude: ['.git', '.idea', 'tmp/*']
 }
 	
@@ -26,8 +27,11 @@ ftpDeploy.deploy(config, function(err) {
 	if (err) console.log(err)
 	else console.log('finished');
 });
+```
 
-// to be notified of what ftpDeploy is doing
+To be notified of what ftpDeploy is doing:
+
+```
 ftpDeploy.on('uploading', function(data) {
     data.totalFileCount;       // total file count being transferred
     data.transferredFileCount; // number of files transferred
@@ -40,8 +44,29 @@ ftpDeploy.on('uploaded', function(data) {
 });
 ```
 
+To continue uploading files even if a file upload fails: 
+
+```
+config.stopOnError = false;
+
+ftpDeploy.deploy(config, function(err) {
+	if (err) console.log(err)
+	else console.log('finished');
+});
+
+ftpDeploy.on('error', function (data) {
+	console.log(data.err); // data will also include filename, relativePath, and other goodies
+});
+```
+
 
 ## Changes
+
+- 0.5.x
+	- upgraded jsftp from 0.6.x to 1.2.x
+	- Added stopOnError to configuration. Defaults to true. Stops uploading files if an error occurs. If set to false, ftp-deploy skips over failed file uploads and does not pass the deploy callback with an error.  (Note: failing to create a directory will still stop deployment)
+	- added 'error' events. 
+	- deprecated paralleluploads config setting (no longer supported by jsftp)
 
 - 0.4.x
     - uploading and uploaded events emit data instead of a relative file path.

@@ -29,7 +29,8 @@ var FtpDeployer = function () {
 	var exclude = [];
 	var currPath;
 	var authVals;
-
+	var stopOnError = true;
+	
 	function canIncludeFile(filePath) {
 		if (exclude.length > 0) {
 			for(var i = 0; i < exclude.length; i++) {
@@ -137,6 +138,25 @@ var FtpDeployer = function () {
         
 		thisDeployer.emit('uploading', emitData);
 		var fullPathName = path.join(localRoot, currPath, inFilename);
+		
+		ftp.put(fullPathName, inFilename.replace(/\\/g, '/'), function (err) {
+			if (err) {
+				if (stopOnError) {
+					cb(err);	
+				} else {
+					emitData.err = err;
+					thisDeployer.emit('error', emitData);
+					cb();
+				}
+			} else {
+				thisDeployer.transferred++;
+				emitData.transferredFileCount = thisDeployer.transferred;
+				thisDeployer.emit('uploaded', emitData);
+				cb();
+			}
+		});
+		
+		/*
 		fs.readFile(fullPathName, function (err, fileData) {
 			if (err) { 
 				cb(err);
@@ -155,6 +175,7 @@ var FtpDeployer = function () {
 				});
 			}	
 		});
+		*/
 	}
 
 	// A method that processes a location - changes to a folder and uploads all respective files
@@ -188,7 +209,7 @@ var FtpDeployer = function () {
 
 		localRoot = config.localRoot; 
 		remoteRoot = config.remoteRoot;
-		parallelUploads = config.parallelUploads || parallelUploads;
+		stopOnError = config.stopOnError || stopOnError;
 		exclude = config.exclude || exclude;
 
 		ftp.useList = true;
