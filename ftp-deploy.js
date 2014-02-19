@@ -209,7 +209,7 @@ var FtpDeployer = function () {
 
 		localRoot = config.localRoot; 
 		remoteRoot = config.remoteRoot;
-		stopOnError = config.stopOnError || stopOnError;
+		if (has(config, 'stopOnError')) stopOnError = config.stopOnError;
 		exclude = config.exclude || exclude;
 
 		ftp.useList = true;
