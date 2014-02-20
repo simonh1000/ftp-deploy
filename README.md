@@ -47,14 +47,14 @@ ftpDeploy.on('uploaded', function(data) {
 To continue uploading files even if a file upload fails: 
 
 ```
-config.stopOnError = false;
+config.continueOnError = true;
 
 ftpDeploy.deploy(config, function(err) {
-	if (err) console.log(err)
+	if (err) console.log(err) // error authenticating or creating/traversing directory
 	else console.log('finished');
 });
 
-ftpDeploy.on('error', function (data) {
+ftpDeploy.on('upload-error', function (data) {
 	console.log(data.err); // data will also include filename, relativePath, and other goodies
 });
 ```
@@ -62,22 +62,27 @@ ftpDeploy.on('error', function (data) {
 
 ## Changes
 
+- 0.6.x
+    - added optional ```continueOnError``` config. When set to true, ftp-deploy continues to upload files after a failed put. When not specified or set to false, the ```.deploy()``` callback is called immediately after a failed put.
+    - added ```upload-error``` event
+    - removed ```stopOnError``` config setting in preference of ```continueOnError```
+
 - 0.5.x
 	- upgraded jsftp from 0.6.x to 1.2.x
-	- Added stopOnError to configuration. Defaults to true. Stops uploading files if an error occurs. If set to false, ftp-deploy skips over failed file uploads and does not pass the deploy callback with an error.  (Note: failing to create a directory will still stop deployment)
-	- added 'error' events. 
+	- Added ```stopOnError``` to configuration.
+	- added ```error``` event. 
 	- deprecated paralleluploads config setting (no longer supported by jsftp)
 
 - 0.4.x
     - uploading and uploaded events emit data instead of a relative file path.
 
 - 0.3.x
-	- New config setting **exclude** can be used to exclude folders/files from the ftp deploy process
+	- New config setting ```exclude``` can be used to exclude folders/files from the ftp deploy process
 
 - 0.2.x
     - Requiring ftp-deploy returns the FtpDeploy object, and you will need to instantiate is separately on your own.
-    - New config setting **paralleluploads**: sets number of  parallelUploads (within a specific folder)
-    - ftpDeploy instance has properties **transferred** and **total**. Useful for determining progress based on file count.
+    - New config setting ```paralleluploads```: sets number of  parallelUploads (within a specific folder)
+    - ftpDeploy instance has properties ```transferred``` and ```total```. Useful for determining progress based on file count.
 
 
 ## Installation
