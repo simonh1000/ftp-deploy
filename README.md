@@ -62,6 +62,9 @@ ftpDeploy.on('upload-error', function (data) {
 
 ## Changes
 
+- 0.7.x
+	- added prompting user for FTP password if none given in config
+
 - 0.6.x
     - added optional ```continueOnError``` config. When set to true, ftp-deploy continues to upload files after a failed put. When not specified or set to false, the ```.deploy()``` callback is called immediately after a failed put.
     - added ```upload-error``` event

@@ -24,6 +24,10 @@
     {
       "name": "Ondrej",
       "url": "https://github.com/der-On"
+    },
+    {
+      "name": "keyle",
+      "url": "https://github.com/keyle"
     } 
   ],
   "main": "ftp-deploy"
