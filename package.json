@@ -10,7 +10,8 @@
   "dependencies": {
     "jsftp": "1.2.x",
     "async": "0.2.x",
-    "minimatch": "0.2.12"
+    "minimatch": "0.2.12",
+    "read": "1.0.5"
   },
   "repository" : {
     "type": "git", 
@@ -23,6 +24,10 @@
     {
       "name": "Ondrej",
       "url": "https://github.com/der-On"
+    },
+    {
+      "name": "keyle",
+      "url": "https://github.com/keyle"
     } 
   ],
   "main": "ftp-deploy"

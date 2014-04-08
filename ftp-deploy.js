@@ -4,7 +4,8 @@ var util = require('util');
 var events = require('events');
 var Ftp = require('jsftp');
 var async = require('async');
-var minimatch = require("minimatch")
+var minimatch = require("minimatch");
+var read = require('read');
 
 // A utility function to remove lodash/underscore dependency
 // Checks an obj for a specified key
@@ -12,11 +13,10 @@ function has (obj, key) {
 	return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
-
 var FtpDeployer = function () {
 	// the constructor for the super class.
 	events.EventEmitter.call(this);
-	
+
 	var thisDeployer = this;
 
 	this.toTransfer;
@@ -30,7 +30,7 @@ var FtpDeployer = function () {
 	var currPath;
 	var authVals;
 	var continueOnError = false;
-	
+
 	function canIncludeFile(filePath) {
 		if (exclude.length > 0) {
 			for(var i = 0; i < exclude.length; i++) {
@@ -39,7 +39,7 @@ var FtpDeployer = function () {
 				}
 			}
 		}
-		
+
 		return true;
 	}
 
@@ -81,17 +81,17 @@ var FtpDeployer = function () {
 				if (!tmpPath.length) {
 					tmpPath = path.sep;
 				}
-				
+
 				// check exclude rules
 				if (canIncludeFile(path.join(tmpPath, files[i]))) {
 					result[tmpPath].push(files[i]);
-					
+
 					// increase total file count
 					thisDeployer.total++;
 				}
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -104,7 +104,7 @@ var FtpDeployer = function () {
 		//console.log("inPath pre-replace: " + inPath);
 		// remove double // if present
 		inPath = inPath.replace(/\/\//g, "/");
-		
+
 		var wrdir = path.basename(inPath);
 		//console.log("inPath:             " + inPath);
 		//console.log("inPath normalized:  " + path.normalize(inPath));
@@ -127,7 +127,7 @@ var FtpDeployer = function () {
 
 	// A method for uploading a single file
 	function ftpPut(inFilename, cb) {
-        
+
         var emitData = {
             totalFileCount: thisDeployer.total,
             transferredFileCount: thisDeployer.transferred,
@@ -135,10 +135,10 @@ var FtpDeployer = function () {
             filename: inFilename,
             relativePath: currPath
         };
-        
+
 		thisDeployer.emit('uploading', emitData);
 		var fullPathName = path.join(localRoot, currPath, inFilename);
-		
+
 		ftp.put(fullPathName, inFilename.replace(/\\/g, '/'), function (err) {
 			if (err) {
 				emitData.err = err;
@@ -156,7 +156,7 @@ var FtpDeployer = function () {
 				cb();
 			}
 		});
-		
+
 	}
 
 	// A method that processes a location - changes to a folder and uploads all respective files
@@ -181,42 +181,55 @@ var FtpDeployer = function () {
 	}
 
 	this.deploy = function (config, cb) {
-		
-		// Init
-		ftp = new Ftp({
-			host: config.host,
-			port: config.port
-		});
 
-		localRoot = config.localRoot; 
-		remoteRoot = config.remoteRoot;
-		if (has(config, 'continueOnError')) continueOnError = config.continueOnError;
-		exclude = config.exclude || exclude;
+        // Prompt for password if none was given
+        if (!config.password) {
+            read({prompt: 'Password for ' + config.username + '@' + config.host + ' (ENTER for none): ', default: '', silent:true}, function (err, res) {
+                config.password = res;
+                configComplete(config, cb);
+            });
+        } else {
+            configComplete(config, cb);
+        }
+    };
 
-		ftp.useList = true;
-		thisDeployer.toTransfer = dirParseSync(localRoot);
+    function configComplete(config, cb) {
 
-		// Authentication and main processing of files
-		ftp.auth(config.username, config.password, function(err) {
-			if (err) {
-				cb(err);
-			} else {
-				// Iterating through all location from the `localRoot` in parallel
-				var locations = Object.keys(thisDeployer.toTransfer);
-				async.mapSeries(locations, ftpProcessLocation, function(err) {
-					if (err) {
-						cb(err);
-					} else {
-						ftp.raw.quit(function(err) {
-							cb(err);
-						});
-					}
-				});
-			}
-		});
-	};
-	
-}
+        // Init
+        ftp = new Ftp({
+            host: config.host,
+            port: config.port
+        });
+
+        localRoot = config.localRoot;
+        remoteRoot = config.remoteRoot;
+        if (has(config, 'continueOnError')) continueOnError = config.continueOnError;
+        exclude = config.exclude || exclude;
+
+        ftp.useList = true;
+        thisDeployer.toTransfer = dirParseSync(localRoot);
+
+        // Authentication and main processing of files
+        ftp.auth(config.username, config.password, function (err) {
+            if (err) {
+                cb(err);
+            } else {
+                // Iterating through all location from the `localRoot` in parallel
+                var locations = Object.keys(thisDeployer.toTransfer);
+                async.mapSeries(locations, ftpProcessLocation, function (err) {
+                    if (err) {
+                        cb(err);
+                    } else {
+                        ftp.raw.quit(function (err) {
+                            cb(err);
+                        });
+                    }
+                });
+            }
+        });
+    };
+};
+
 util.inherits(FtpDeployer, events.EventEmitter);
 
 
@@ -225,3 +238,5 @@ util.inherits(FtpDeployer, events.EventEmitter);
 if (typeof module !== 'undefined' && "exports" in module) {
 	module.exports = FtpDeployer;
 }
+
+

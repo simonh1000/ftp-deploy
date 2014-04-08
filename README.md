@@ -15,7 +15,7 @@ var ftpDeploy = new FtpDeploy();
 
 var config = {
 	username: "username",
-	password: "password",
+	password: "password", // optional, prompted if none given
 	host: "ftp.someserver.com",
 	port: 21,
 	localRoot: __dirname + "/local-folder",
@@ -61,6 +61,9 @@ ftpDeploy.on('upload-error', function (data) {
 
 
 ## Changes
+
+- 0.7.x
+	- added prompting user for FTP password if none given in config
 
 - 0.6.x
     - added optional ```continueOnError``` config. When set to true, ftp-deploy continues to upload files after a failed put. When not specified or set to false, the ```.deploy()``` callback is called immediately after a failed put.
