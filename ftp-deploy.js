@@ -28,7 +28,6 @@ var FtpDeployer = function () {
 	var parallelUploads = 1;
 	var exclude = [];
 	var currPath;
-	var authVals;
 	var continueOnError = false;
 
 	function canIncludeFile(filePath) {
@@ -101,19 +100,15 @@ var FtpDeployer = function () {
 		if (inPath.charAt(0) !== '/') {
 			inPath = '/' + inPath;
 		}
-		//console.log("inPath pre-replace: " + inPath);
 		// remove double // if present
 		inPath = inPath.replace(/\/\//g, "/");
-
-		var wrdir = path.basename(inPath);
-		//console.log("inPath:             " + inPath);
-		//console.log("inPath normalized:  " + path.normalize(inPath));
-		//console.log("wrdir:              " + wrdir);
+		// Change working directory. 
+		// If there's an error it probably doesn't exist so create it.
+		// If no error, just continue on.
 		ftp.raw.cwd(inPath, function(err) {
 			if (err) {
-              	ftp.raw.mkd(inPath, function(err) {
+                ftp.raw.mkd(inPath, function(err) {
 					if(err) {
-						//console.log(err);
 						cb(err);
 					} else {
 						ftpCwd(inPath, cb);
@@ -166,7 +161,6 @@ var FtpDeployer = function () {
 		} else {
 			ftpCwd(remoteRoot + '/' + inPath.replace(/\\/gi, '/'), function (err) {
 				if (err) {
-					//console.error(err);
 					cb(err);
 				} else {
 					var files;
@@ -179,14 +173,13 @@ var FtpDeployer = function () {
 			});
 		}
 	}
-
+    
 	this.deploy = function (config, cb) {
-
         // Prompt for password if none was given
         if (!config.password) {
             read({prompt: 'Password for ' + config.username + '@' + config.host + ' (ENTER for none): ', default: '', silent:true}, function (err, res) {
-                config.password = res;
-                configComplete(config, cb);
+            config.password = res;
+            configComplete(config, cb);
             });
         } else {
             configComplete(config, cb);
@@ -227,7 +220,7 @@ var FtpDeployer = function () {
                 });
             }
         });
-    };
+    }
 };
 
 util.inherits(FtpDeployer, events.EventEmitter);
@@ -238,5 +231,3 @@ util.inherits(FtpDeployer, events.EventEmitter);
 if (typeof module !== 'undefined' && "exports" in module) {
 	module.exports = FtpDeployer;
 }
-
-
