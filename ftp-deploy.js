@@ -25,6 +25,8 @@ var FtpDeployer = function () {
 	var ftp;
 	var localRoot;
 	var remoteRoot;
+	var partialDirectories = [];  // holds list of directories to check & create (excluding local root path)
+	var partialFilePaths = [];    // holds list of partial file paths to upload
 	//var parallelUploads = 1; // NOTE: Keep this around for when sftp is supported
 	var exclude = [];
 	var continueOnError = false;
@@ -70,6 +72,7 @@ var FtpDeployer = function () {
 				if (canIncludeFile(tmpPath)) {
 					if (!has(result, tmpPath)) {
 						result[tmpPath] = [];
+						partialDirectories.push(tmpPath);
 					}
 					dirParseSync(currFile, result);
 				}
@@ -80,9 +83,10 @@ var FtpDeployer = function () {
 				}
 
 				// check exclude rules
-				if (canIncludeFile(path.join(tmpPath, files[i]))) {
+				var partialFilePath = path.join(tmpPath, files[i]);
+				if (canIncludeFile(partialFilePath)) {
 					result[tmpPath].push(files[i]);
-
+                    partialFilePaths.push(partialFilePath);
 					// increase total file count
 					thisDeployer.total++;
 				}
@@ -128,8 +132,7 @@ var FtpDeployer = function () {
 	}
     
     function ftpMakeDirectoriesIfNeeded (cb) {
-        var locations = Object.keys(thisDeployer.toTransfer);
-        async.eachSeries(locations, ftpMakeRemoteDirectoryIfNeeded, function (err) {
+        async.eachSeries(partialDirectories, ftpMakeRemoteDirectoryIfNeeded, function (err) {
             cb(err);
         });
     }
@@ -200,14 +203,7 @@ var FtpDeployer = function () {
                         // if there was an error creating a remote directory we can't continue to upload files
                         cb(err);
                     } else {
-                        // since all the remote directories exist we can just loop through all the files and send them
-                        var allFiles = [];
-                        for (var n in thisDeployer.toTransfer) {
-                            for (var k in thisDeployer.toTransfer[n]) {
-                                allFiles.push(n + "/" + thisDeployer.toTransfer[n][k]);
-                            }
-                        }
-                        async.eachSeries(allFiles, ftpPut, function (err) {
+                        async.eachSeries(partialFilePaths, ftpPut, function (err) {
                             if (err) {
                                 cb(err);
                             } else {
