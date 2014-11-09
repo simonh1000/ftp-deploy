@@ -25,9 +25,8 @@ var FtpDeployer = function () {
 	var ftp;
 	var localRoot;
 	var remoteRoot;
-	var parallelUploads = 1;
+	//var parallelUploads = 1; // NOTE: Keep this around for when sftp is supported
 	var exclude = [];
-	var currPath;
 	var continueOnError = false;
 
 	function canIncludeFile(filePath) {
@@ -38,7 +37,6 @@ var FtpDeployer = function () {
 				}
 			}
 		}
-
 		return true;
 	}
 
@@ -94,47 +92,23 @@ var FtpDeployer = function () {
 		return result;
 	}
 
-	// A method for changing the remote working directory and creating one if it doesn't already exist
-	function ftpCwd(inPath, cb) {
-		// add leading slash if it is missing
-		if (inPath.charAt(0) !== '/') {
-			inPath = '/' + inPath;
-		}
-		// remove double // if present
-		inPath = inPath.replace(/\/\//g, "/");
-		// Change working directory. 
-		// If there's an error it probably doesn't exist so create it.
-		// If no error, just continue on.
-		ftp.raw.cwd(inPath, function(err) {
-			if (err) {
-                ftp.raw.mkd(inPath, function(err) {
-					if(err) {
-						cb(err);
-					} else {
-						ftpCwd(inPath, cb);
-					}
-				});
-			} else {
-				cb();
-			}
-		});
-	}
-
 	// A method for uploading a single file
-	function ftpPut(inFilename, cb) {
-
+	function ftpPut(partialFilePath, cb) {
+        var remoteFilePath = remoteRoot + "/" + partialFilePath;
+        remoteFilePath = remoteFilePath.replace(/\\/g, '/');
+        
+        var fullLocalPath = path.join(localRoot, partialFilePath);
+        
         var emitData = {
             totalFileCount: thisDeployer.total,
             transferredFileCount: thisDeployer.transferred,
             percentComplete: Math.round((thisDeployer.transferred / thisDeployer.total) * 100),
-            filename: inFilename,
-            relativePath: currPath
+            filename: partialFilePath
         };
-
+        
 		thisDeployer.emit('uploading', emitData);
-		var fullPathName = path.join(localRoot, currPath, inFilename);
-
-		ftp.put(fullPathName, inFilename.replace(/\\/g, '/'), function (err) {
+		
+		ftp.put(fullLocalPath, remoteFilePath, function (err) {
 			if (err) {
 				emitData.err = err;
 				thisDeployer.emit('error', emitData); // error event from 0.5.x TODO: either expand error events or remove this
@@ -151,28 +125,42 @@ var FtpDeployer = function () {
 				cb();
 			}
 		});
-
 	}
+    
+    function ftpMakeDirectoriesIfNeeded (cb) {
+        var locations = Object.keys(thisDeployer.toTransfer);
+        async.eachSeries(locations, ftpMakeRemoteDirectoryIfNeeded, function (err) {
+            cb(err);
+        });
+    }
 
-	// A method that processes a location - changes to a folder and uploads all respective files
-	function ftpProcessLocation (inPath, cb) {
-		if (!thisDeployer.toTransfer[inPath]) {
-			cb(new Error('Data for ' + inPath + ' not found'));
-		} else {
-			ftpCwd(remoteRoot + '/' + inPath.replace(/\\/gi, '/'), function (err) {
-				if (err) {
-					cb(err);
-				} else {
-					var files;
-					currPath = inPath;
-					files = thisDeployer.toTransfer[inPath];
-					async.mapLimit(files, parallelUploads, ftpPut, function (err) {
-						cb(err);
-					});
-				}
-			});
-		}
-	}
+    // A method for changing the remote working directory and creating one if it doesn't already exist
+    function ftpMakeRemoteDirectoryIfNeeded(partialRemoteDirectory, cb) {
+        // add the remote root, and clean up the slashes
+        var fullRemoteDirectory = remoteRoot + '/' + partialRemoteDirectory.replace(/\\/gi, '/');
+        
+        // add leading slash if it is missing
+        if (fullRemoteDirectory.charAt(0) !== '/') {
+            fullRemoteDirectory = '/' + fullRemoteDirectory;
+        }
+        
+        // remove double // if present
+        fullRemoteDirectory = fullRemoteDirectory.replace(/\/\//g, "/");
+        ftp.raw.cwd(fullRemoteDirectory, function(err) {
+            if (err) {
+                ftp.raw.mkd(fullRemoteDirectory, function(err) {
+                    if(err) {
+                        cb(err);
+                    } else {
+                        ftpMakeRemoteDirectoryIfNeeded(partialRemoteDirectory, cb);
+                    }
+                });
+            } else {
+                cb();
+            }
+        });
+    }
+
     
 	this.deploy = function (config, cb) {
         // Prompt for password if none was given
@@ -201,20 +189,32 @@ var FtpDeployer = function () {
 
         ftp.useList = true;
         thisDeployer.toTransfer = dirParseSync(localRoot);
-
+        
         // Authentication and main processing of files
         ftp.auth(config.username, config.password, function (err) {
             if (err) {
                 cb(err);
             } else {
-                // Iterating through all location from the `localRoot` in parallel
-                var locations = Object.keys(thisDeployer.toTransfer);
-                async.mapSeries(locations, ftpProcessLocation, function (err) {
+                ftpMakeDirectoriesIfNeeded(function (err) {
                     if (err) {
+                        // if there was an error creating a remote directory we can't continue to upload files
                         cb(err);
                     } else {
-                        ftp.raw.quit(function (err) {
-                            cb(err);
+                        // since all the remote directories exist we can just loop through all the files and send them
+                        var allFiles = [];
+                        for (var n in thisDeployer.toTransfer) {
+                            for (var k in thisDeployer.toTransfer[n]) {
+                                allFiles.push(n + "/" + thisDeployer.toTransfer[n][k]);
+                            }
+                        }
+                        async.eachSeries(allFiles, ftpPut, function (err) {
+                            if (err) {
+                                cb(err);
+                            } else {
+                                ftp.raw.quit(function (err) {
+                                    cb(err);
+                                });
+                            }
                         });
                     }
                 });
