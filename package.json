@@ -8,8 +8,8 @@
 	"deploy"
   ],
   "dependencies": {
-    "jsftp": "1.2.x",
-    "async": "0.2.x",
+    "jsftp": "1.3.x",
+    "async": "0.9.x",
     "minimatch": "0.2.12",
     "read": "1.0.5"
   },
