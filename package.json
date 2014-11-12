@@ -30,5 +30,8 @@
       "url": "https://github.com/keyle"
     } 
   ],
+  "scripts": {
+    "test": "node test/test.js"
+  },
   "main": "ftp-deploy"
 }

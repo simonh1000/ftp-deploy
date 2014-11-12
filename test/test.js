@@ -7,7 +7,7 @@ var config = {
     host: "localhost",
     port: 21,
     localRoot: __dirname + "/test-root",
-    remoteRoot: "/Users/rickbergfalk/Public",
+    remoteRoot: "/Users/rickbergfalk/Public/",
     exclude: ['.git', '.idea', 'tmp/*']
 };
     
