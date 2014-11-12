@@ -19,15 +19,14 @@ var FtpDeployer = function () {
 
 	var thisDeployer = this;
 
-	this.toTransfer;
-	this.transferred = 0;
-	this.total = 0;
+	var toTransfer;                // eventually holds the result of dirParseSync()
+	var transferredFileCount = 0;
 	var ftp;
 	var localRoot;
 	var remoteRoot;
-	var partialDirectories = [];  // holds list of directories to check & create (excluding local root path)
-	var partialFilePaths = [];    // holds list of partial file paths to upload
-	//var parallelUploads = 1; // NOTE: Keep this around for when sftp is supported
+	var partialDirectories = [];   // holds list of directories to check & create (excluding local root path)
+	var partialFilePaths = [];     // holds list of partial file paths to upload
+	//var parallelUploads = 1;     // NOTE: this can be added in when sftp is supported
 	var exclude = [];
 	var continueOnError = false;
 
@@ -87,8 +86,6 @@ var FtpDeployer = function () {
 				if (canIncludeFile(partialFilePath)) {
 					result[tmpPath].push(files[i]);
                     partialFilePaths.push(partialFilePath);
-					// increase total file count
-					thisDeployer.total++;
 				}
 			}
 		}
@@ -104,9 +101,9 @@ var FtpDeployer = function () {
         var fullLocalPath = path.join(localRoot, partialFilePath);
         
         var emitData = {
-            totalFileCount: thisDeployer.total,
-            transferredFileCount: thisDeployer.transferred,
-            percentComplete: Math.round((thisDeployer.transferred / thisDeployer.total) * 100),
+            totalFileCount: partialFilePaths.length,
+            transferredFileCount: transferredFileCount,
+            percentComplete: Math.round((transferredFileCount / partialFilePaths.length) * 100),
             filename: partialFilePath
         };
         
@@ -123,8 +120,8 @@ var FtpDeployer = function () {
 					cb(err);
 				}
 			} else {
-				thisDeployer.transferred++;
-				emitData.transferredFileCount = thisDeployer.transferred;
+				transferredFileCount++;
+				emitData.transferredFileCount = transferredFileCount;
 				thisDeployer.emit('uploaded', emitData);
 				cb();
 			}
@@ -191,7 +188,7 @@ var FtpDeployer = function () {
         exclude = config.exclude || exclude;
 
         ftp.useList = true;
-        thisDeployer.toTransfer = dirParseSync(localRoot);
+        toTransfer = dirParseSync(localRoot);
         
         // Authentication and main processing of files
         ftp.auth(config.username, config.password, function (err) {
@@ -221,9 +218,4 @@ var FtpDeployer = function () {
 
 util.inherits(FtpDeployer, events.EventEmitter);
 
-
-
-// commonJS module systems
-if (typeof module !== 'undefined' && "exports" in module) {
-	module.exports = FtpDeployer;
-}
+module.exports = FtpDeployer;
