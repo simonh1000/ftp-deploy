@@ -19,16 +19,15 @@ var FtpDeployer = function () {
 
 	var thisDeployer = this;
 
-	this.toTransfer;
-	this.transferred = 0;
-	this.total = 0;
+	var toTransfer;                // eventually holds the result of dirParseSync()
+	var transferredFileCount = 0;
 	var ftp;
 	var localRoot;
 	var remoteRoot;
-	var parallelUploads = 1;
+	var partialDirectories = [];   // holds list of directories to check & create (excluding local root path)
+	var partialFilePaths = [];     // holds list of partial file paths to upload
+	//var parallelUploads = 1;     // NOTE: this can be added in when sftp is supported
 	var exclude = [];
-	var currPath;
-	var authVals;
 	var continueOnError = false;
 
 	function canIncludeFile(filePath) {
@@ -39,7 +38,6 @@ var FtpDeployer = function () {
 				}
 			}
 		}
-
 		return true;
 	}
 
@@ -73,6 +71,7 @@ var FtpDeployer = function () {
 				if (canIncludeFile(tmpPath)) {
 					if (!has(result, tmpPath)) {
 						result[tmpPath] = [];
+						partialDirectories.push(tmpPath);
 					}
 					dirParseSync(currFile, result);
 				}
@@ -83,11 +82,10 @@ var FtpDeployer = function () {
 				}
 
 				// check exclude rules
-				if (canIncludeFile(path.join(tmpPath, files[i]))) {
+				var partialFilePath = path.join(tmpPath, files[i]);
+				if (canIncludeFile(partialFilePath)) {
 					result[tmpPath].push(files[i]);
-
-					// increase total file count
-					thisDeployer.total++;
+                    partialFilePaths.push(partialFilePath);
 				}
 			}
 		}
@@ -95,51 +93,23 @@ var FtpDeployer = function () {
 		return result;
 	}
 
-	// A method for changing the remote working directory and creating one if it doesn't already exist
-	function ftpCwd(inPath, cb) {
-		// add leading slash if it is missing
-		if (inPath.charAt(0) !== '/') {
-			inPath = '/' + inPath;
-		}
-		//console.log("inPath pre-replace: " + inPath);
-		// remove double // if present
-		inPath = inPath.replace(/\/\//g, "/");
-
-		var wrdir = path.basename(inPath);
-		//console.log("inPath:             " + inPath);
-		//console.log("inPath normalized:  " + path.normalize(inPath));
-		//console.log("wrdir:              " + wrdir);
-		ftp.raw.cwd(inPath, function(err) {
-			if (err) {
-              	ftp.raw.mkd(inPath, function(err) {
-					if(err) {
-						//console.log(err);
-						cb(err);
-					} else {
-						ftpCwd(inPath, cb);
-					}
-				});
-			} else {
-				cb();
-			}
-		});
-	}
-
 	// A method for uploading a single file
-	function ftpPut(inFilename, cb) {
-
+	function ftpPut(partialFilePath, cb) {
+        var remoteFilePath = remoteRoot + "/" + partialFilePath;
+        remoteFilePath = remoteFilePath.replace(/\\/g, '/');
+        
+        var fullLocalPath = path.join(localRoot, partialFilePath);
+        
         var emitData = {
-            totalFileCount: thisDeployer.total,
-            transferredFileCount: thisDeployer.transferred,
-            percentComplete: Math.round((thisDeployer.transferred / thisDeployer.total) * 100),
-            filename: inFilename,
-            relativePath: currPath
+            totalFileCount: partialFilePaths.length,
+            transferredFileCount: transferredFileCount,
+            percentComplete: Math.round((transferredFileCount / partialFilePaths.length) * 100),
+            filename: partialFilePath
         };
-
+        
 		thisDeployer.emit('uploading', emitData);
-		var fullPathName = path.join(localRoot, currPath, inFilename);
-
-		ftp.put(fullPathName, inFilename.replace(/\\/g, '/'), function (err) {
+		
+		ftp.put(fullLocalPath, remoteFilePath, function (err) {
 			if (err) {
 				emitData.err = err;
 				thisDeployer.emit('error', emitData); // error event from 0.5.x TODO: either expand error events or remove this
@@ -150,43 +120,54 @@ var FtpDeployer = function () {
 					cb(err);
 				}
 			} else {
-				thisDeployer.transferred++;
-				emitData.transferredFileCount = thisDeployer.transferred;
+				transferredFileCount++;
+				emitData.transferredFileCount = transferredFileCount;
 				thisDeployer.emit('uploaded', emitData);
 				cb();
 			}
 		});
-
 	}
+    
+    function ftpMakeDirectoriesIfNeeded (cb) {
+        async.eachSeries(partialDirectories, ftpMakeRemoteDirectoryIfNeeded, function (err) {
+            cb(err);
+        });
+    }
 
-	// A method that processes a location - changes to a folder and uploads all respective files
-	function ftpProcessLocation (inPath, cb) {
-		if (!thisDeployer.toTransfer[inPath]) {
-			cb(new Error('Data for ' + inPath + ' not found'));
-		} else {
-			ftpCwd(remoteRoot + '/' + inPath.replace(/\\/gi, '/'), function (err) {
-				if (err) {
-					//console.error(err);
-					cb(err);
-				} else {
-					var files;
-					currPath = inPath;
-					files = thisDeployer.toTransfer[inPath];
-					async.mapLimit(files, parallelUploads, ftpPut, function (err) {
-						cb(err);
-					});
-				}
-			});
-		}
-	}
+    // A method for changing the remote working directory and creating one if it doesn't already exist
+    function ftpMakeRemoteDirectoryIfNeeded(partialRemoteDirectory, cb) {
+        // add the remote root, and clean up the slashes
+        var fullRemoteDirectory = remoteRoot + '/' + partialRemoteDirectory.replace(/\\/gi, '/');
+        
+        // add leading slash if it is missing
+        if (fullRemoteDirectory.charAt(0) !== '/') {
+            fullRemoteDirectory = '/' + fullRemoteDirectory;
+        }
+        
+        // remove double // if present
+        fullRemoteDirectory = fullRemoteDirectory.replace(/\/\//g, "/");
+        ftp.raw.cwd(fullRemoteDirectory, function(err) {
+            if (err) {
+                ftp.raw.mkd(fullRemoteDirectory, function(err) {
+                    if(err) {
+                        cb(err);
+                    } else {
+                        ftpMakeRemoteDirectoryIfNeeded(partialRemoteDirectory, cb);
+                    }
+                });
+            } else {
+                cb();
+            }
+        });
+    }
 
+    
 	this.deploy = function (config, cb) {
-
         // Prompt for password if none was given
         if (!config.password) {
             read({prompt: 'Password for ' + config.username + '@' + config.host + ' (ENTER for none): ', default: '', silent:true}, function (err, res) {
-                config.password = res;
-                configComplete(config, cb);
+            config.password = res;
+            configComplete(config, cb);
             });
         } else {
             configComplete(config, cb);
@@ -207,36 +188,34 @@ var FtpDeployer = function () {
         exclude = config.exclude || exclude;
 
         ftp.useList = true;
-        thisDeployer.toTransfer = dirParseSync(localRoot);
-
+        toTransfer = dirParseSync(localRoot);
+        
         // Authentication and main processing of files
         ftp.auth(config.username, config.password, function (err) {
             if (err) {
                 cb(err);
             } else {
-                // Iterating through all location from the `localRoot` in parallel
-                var locations = Object.keys(thisDeployer.toTransfer);
-                async.mapSeries(locations, ftpProcessLocation, function (err) {
+                ftpMakeDirectoriesIfNeeded(function (err) {
                     if (err) {
+                        // if there was an error creating a remote directory we can't continue to upload files
                         cb(err);
                     } else {
-                        ftp.raw.quit(function (err) {
-                            cb(err);
+                        async.eachSeries(partialFilePaths, ftpPut, function (err) {
+                            if (err) {
+                                cb(err);
+                            } else {
+                                ftp.raw.quit(function (err) {
+                                    cb(err);
+                                });
+                            }
                         });
                     }
                 });
             }
         });
-    };
+    }
 };
 
 util.inherits(FtpDeployer, events.EventEmitter);
 
-
-
-// commonJS module systems
-if (typeof module !== 'undefined' && "exports" in module) {
-	module.exports = FtpDeployer;
-}
-
-
+module.exports = FtpDeployer;

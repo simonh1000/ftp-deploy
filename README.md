@@ -1,6 +1,6 @@
 # ftp-deploy
 
-Ftp a folder from your local disk to a remote ftp destination. Does not delete from destination directory. Derived from [https://github.com/zonak/grunt-ftp-deploy](https://github.com/zonak/grunt-ftp-deploy "zonak/grunt-ftp-deploy").
+Ftp a folder from your local disk to a remote ftp destination. Does not delete from destination directory.
 
 A Node.js package.
 
@@ -36,8 +36,7 @@ ftpDeploy.on('uploading', function(data) {
     data.totalFileCount;       // total file count being transferred
     data.transferredFileCount; // number of files transferred
     data.percentComplete;      // percent as a number 1 - 100
-    data.filename;             // filename being uploaded
-    data.relativePath;         // relative path to file being uploaded from local root location
+    data.filename;             // partial path with filename being uploaded
 });
 ftpDeploy.on('uploaded', function(data) {
 	console.log(data);         // same data as uploading event
@@ -61,6 +60,11 @@ ftpDeploy.on('upload-error', function (data) {
 
 
 ## Changes
+
+- 1.0.0
+    - refactored for (hopefully) easier to understand code
+    - brought jsftp to 1.3.x, async to 0.9.x
+    - removed relative path from uploading/uploaded event data. (filename contains file name and partial path)
 
 - 0.7.x
 	- added prompting user for FTP password if none given in config
