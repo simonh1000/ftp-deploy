@@ -10,6 +10,16 @@ var config = {
     remoteRoot: "/Users/rickbergfalk/Public/",
     exclude: ['.git', '.idea', 'tmp/*']
 };
+
+ftpDeploy.on('uploaded', function (data) {
+    console.log('uploaded:');
+    console.log(data);
+});
+
+ftpDeploy.on('uploading', function (data) {
+    console.log('uploading');
+    console.log(data);
+});
     
 ftpDeploy.deploy(config, function(err) {
     if (err) console.log(err);
