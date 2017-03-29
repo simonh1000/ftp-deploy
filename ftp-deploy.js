@@ -28,11 +28,23 @@ var FtpDeployer = function () {
 	var partialFilePaths = [];     // holds list of partial file paths to upload
 	//var parallelUploads = 1;     // NOTE: this can be added in when sftp is supported
 	var exclude = [];
+	var include = [];
 	var continueOnError = false;
 
 	function canIncludeFile(filePath) {
+	    var i;
+
+	    if(include.length > 0) {
+            for(i = 0; i < include.length; i++) {
+                if (minimatch(filePath, include[i], {matchBase: true})) {
+                    return true;
+                }
+            }
+            // fallthrough to exclude list
+        }
+
 		if (exclude.length > 0) {
-			for(var i = 0; i < exclude.length; i++) {
+			for(i = 0; i < exclude.length; i++) {
 				if (minimatch(filePath, exclude[i], {matchBase: true})) {
 					return false;
 				}
@@ -186,6 +198,7 @@ var FtpDeployer = function () {
         remoteRoot = config.remoteRoot;
         if (has(config, 'continueOnError')) continueOnError = config.continueOnError;
         exclude = config.exclude || exclude;
+        include = config.include || include;
 
         ftp.useList = true;
         toTransfer = dirParseSync(localRoot);
