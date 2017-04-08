@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+    - Adds an optional config.include which supersedes any exclusion rules.
+    - Linting code cleanup via xo style/tool
+
+## 1.1.0
+    - Updated dependencies
+
 ## 1.0.0
 
     - refactored for (hopefully) easier to understand code
