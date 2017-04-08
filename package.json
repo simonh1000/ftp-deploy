@@ -31,6 +31,8 @@
     }
   ],
   "scripts": {
+    "lint": "xo",
+    "lint-fix": "xo --fix",
     "test": "node test/test.js"
   },
   "main": "ftp-deploy",
