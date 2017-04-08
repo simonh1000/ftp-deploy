@@ -20,6 +20,9 @@
   "bugs": {
     "url": "https://github.com/rickbergfalk/ftp-deploy/issues"
   },
+  "engines": {
+    "node": ">=4"
+  },
   "contributors": [
     {
       "name": "Ondrej",
