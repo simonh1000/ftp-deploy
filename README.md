@@ -25,7 +25,8 @@ var config = {
 	port: 21,
 	localRoot: __dirname + "/local-folder",
 	remoteRoot: "/public_html/remote-folder/",
-	exclude: ['.git', '.idea', 'tmp/*']
+	include: ['build/version.txt'],
+	exclude: ['.git', '.idea', 'tmp/*', 'build/*']
 }
 	
 ftpDeploy.deploy(config, function(err) {
