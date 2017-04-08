@@ -6,6 +6,9 @@ A Node.js package.
 
 (Need sftp? Check out [sftp-upload](https://github.com/pirumpi/sftp-upload))
 
+## Currently Unmaintained
+
+If you would like to take ownership of this module on npm let me know.
 
 ## Usage
 
