@@ -8,7 +8,7 @@ A Node.js package.
 
 ## Currently Unmaintained
 
-If you would like to take ownership of this module on npm let me know.
+If you would like to take ownership of this module or have publishing rights let me know.
 
 ## Usage
 
