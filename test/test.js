@@ -4,12 +4,12 @@ const FtpDeploy = require('../ftp-deploy.js');
 const ftpDeploy = new FtpDeploy();
 
 const config = {
-	username: 'rickbergfalk',
+	username: 'simon',
 	password: '', // Optional, prompted if none given
 	host: 'localhost',
 	port: 21,
 	localRoot: path.join(__dirname, 'test-root'),
-	remoteRoot: '/Users/rickbergfalk/Public/',
+	remoteRoot: path.join(__dirname, 'ftpsite'),
 	exclude: ['.git', '.idea', 'tmp/*']
 };
 
