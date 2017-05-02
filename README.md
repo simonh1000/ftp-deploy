@@ -6,9 +6,9 @@ A Node.js package.
 
 (Need sftp? Check out [sftp-upload](https://github.com/pirumpi/sftp-upload))
 
-## Currently Unmaintained
+## New maintianer
 
-If you would like to take ownership of this module or have publishing rights let me know.
+I've taken over from Rick and will start working on the deprecation warnings, and the 'delete remote directory' requests.
 
 ## Usage
 
@@ -37,7 +37,7 @@ ftpDeploy.deploy(config, function(err) {
 
 To be notified of what ftpDeploy is doing:
 
-```
+```js
 ftpDeploy.on('uploading', function(data) {
     data.totalFileCount;       // total file count being transferred
     data.transferredFileCount; // number of files transferred
@@ -51,7 +51,7 @@ ftpDeploy.on('uploaded', function(data) {
 
 To continue uploading files even if a file upload fails: 
 
-```
+```js
 config.continueOnError = true;
 
 ftpDeploy.deploy(config, function(err) {

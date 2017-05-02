@@ -1,17 +1,18 @@
 {
   "name": "ftp-deploy",
   "version": "1.2.0",
-  "author": "Rick Bergfalk <rick.bergfalk@gmail.com> (http://rickbergfalk.com/)",
+  "author": "Simon Hampton (was Rick Bergfalk)",
   "description": "Ftp a folder from your local disk to an ftp destination. Does not delete from destination directory. Derived from grunt-ftp-deploy",
   "keywords": [
     "ftp",
     "deploy"
   ],
+  "license": "",
   "dependencies": {
     "jsftp": "1.x.x",
-    "async": "1.x.x",
-    "minimatch": "0.2.12",
-    "read": "1.0.5"
+    "async": "2.x.x",
+    "minimatch": "3.0.3",
+    "read": "1.0.7"
   },
   "repository": {
     "type": "git",
