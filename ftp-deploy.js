@@ -156,9 +156,9 @@ const FtpDeployer = function () {
 
     // Remove double // if present
 		fullRemoteDirectory = fullRemoteDirectory.replace(/\/\//g, '/');
-		ftp.raw.cwd(fullRemoteDirectory, err => {
+		ftp.raw('cwd', fullRemoteDirectory, (err) => {
 			if (err) {
-				ftp.raw.mkd(fullRemoteDirectory, err => {
+				ftp.raw('mkd', fullRemoteDirectory, (err) => {
 					if (err) {
 						cb(err);
 					} else {
@@ -218,7 +218,7 @@ const FtpDeployer = function () {
 							if (err) {
 								cb(err);
 							} else {
-								ftp.raw.quit(err => {
+								ftp.raw('quit', (err, data) => {
 									cb(err);
 								});
 							}
