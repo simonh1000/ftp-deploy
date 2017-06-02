@@ -12,6 +12,14 @@ I've taken over from Rick and will start working on the deprecation warnings, an
 
 ## Usage
 
+I create a file - e.g. deploy.js - in the root of my source code and add a script to its package.json so that I can `npm run deploy`.
+
+```json
+  "scripts": {
+    "deploy": "node deploy"
+  },
+```
+
 The most basic usage (stops uploading when an error occurs):
 
 ```js
