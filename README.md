@@ -1,14 +1,18 @@
 # ftp-deploy
 
-Ftp a folder from your local disk to a remote ftp destination. Does not delete from destination directory.
+A Node.js package to help with deploying code. Ftp a folder from your local disk to a remote ftp destination. Does not delete from destination directory.
 
-A Node.js package.
+## Installation
+
+```js
+npm install ftp-deploy
+```
 
 (Need sftp? Check out [sftp-upload](https://github.com/pirumpi/sftp-upload))
 
 ## New maintianer
 
-I've taken over from Rick and will start working on the deprecation warnings, and the 'delete remote directory' requests.
+I've taken over from Rick in May 2017, and will start working on the deprecation warnings, and the 'delete remote directory' requests.
 
 ## Usage
 
@@ -71,16 +75,9 @@ ftpDeploy.on('upload-error', function (data) {
 	console.log(data.err); // data will also include filename, relativePath, and other goodies
 });
 ```
+## Testing 
 
-
-
-## Installation
-
-```js
-npm install ftp-deploy
-```
-
-
+I use proftpd to create a simple ftp server at test/remote and then run the script at `node ./test/test`
 
 ## License 
 
