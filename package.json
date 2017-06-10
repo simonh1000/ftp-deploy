@@ -1,46 +1,45 @@
 {
-  "name": "ftp-deploy",
-  "version": "1.2.1",
-  "author": "Simon Hampton (was Rick Bergfalk)",
-  "description": "Ftp a folder from your local disk to an ftp destination. Does not delete from destination directory. Derived from grunt-ftp-deploy",
-  "keywords": [
-    "ftp",
-    "deploy"
-  ],
-  "license": "",
-  "dependencies": {
-    "jsftp": "1.x.x",
-    "async": "2.x.x",
-    "minimatch": "3.0.3",
-    "read": "1.0.7"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/simonh1000/ftp-deploy"
-  },
-  "bugs": {
-    "url": "https://github.com/simonh1000/ftp-deploy/issues"
-  },
-  "engines": {
-    "node": ">=4"
-  },
-  "contributors": [
-    {
-      "name": "Ondrej",
-      "url": "https://github.com/der-On"
+    "name": "ftp-deploy",
+    "version": "1.2.2",
+    "author": "Simon Hampton (was Rick Bergfalk)",
+    "description": "Ftp a folder from your local disk to an ftp destination. Does not delete from destination directory. Derived from grunt-ftp-deploy",
+    "keywords": [
+        "ftp",
+        "deploy"
+    ],
+    "license": "",
+    "dependencies": {
+        "jsftp": "2.0.x",
+        "async": "2.x.x",
+        "minimatch": "3.0.4",
+        "read": "1.0.7"
     },
-    {
-      "name": "keyle",
-      "url": "https://github.com/keyle"
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/simonh1000/ftp-deploy"
+    },
+    "bugs": {
+        "url": "https://github.com/simonh1000/ftp-deploy/issues"
+    },
+    "engines": {
+        "node": ">=4"
+    },
+    "contributors": [{
+            "name": "Ondrej",
+            "url": "https://github.com/der-On"
+        },
+        {
+            "name": "keyle",
+            "url": "https://github.com/keyle"
+        }
+    ],
+    "scripts": {
+        "lint": "xo",
+        "lint-fix": "xo --fix",
+        "test": "node test/test.js"
+    },
+    "main": "ftp-deploy",
+    "devDependencies": {
+        "xo": "^0.18.2"
     }
-  ],
-  "scripts": {
-    "lint": "xo",
-    "lint-fix": "xo --fix",
-    "test": "node test/test.js"
-  },
-  "main": "ftp-deploy",
-  "devDependencies": {
-    "xo": "^0.18.1"
-  }
 }
