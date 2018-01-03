@@ -5,7 +5,7 @@ A Node.js package to help with deploying code. Ftp a folder from your local disk
 ## Installation
 
 ```js
-npm install ftp-deploy
+npm install --save-dev ftp-deploy
 ```
 
 (Need sftp? Check out [sftp-upload](https://github.com/pirumpi/sftp-upload))
@@ -37,8 +37,8 @@ var config = {
 	port: 21,
 	localRoot: __dirname + "/local-folder",
 	remoteRoot: "/public_html/remote-folder/",
-	include: ['build/version.txt'],
-	exclude: ['.git', '.idea', 'tmp/*', 'build/*']
+	include: ['*.php', 'dist/*'],
+	exclude: ['.*', 'tmp/*', 'build/*']
 }
 	
 ftpDeploy.deploy(config, function(err) {
@@ -46,6 +46,12 @@ ftpDeploy.deploy(config, function(err) {
 	else console.log('finished');
 });
 ```
+
+## Configuration
+
+ * `include`: all files that match will be uploaded.
+ * `exclude`: all files that match willnopt be uploaded
+ * default: All files that match neither test WILL be uploaded
 
 To be notified of what ftpDeploy is doing:
 

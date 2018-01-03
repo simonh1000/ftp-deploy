@@ -96,6 +96,57 @@ const FtpDeployer = function() {
         });
     }
 
+    // A method for parsing the source location and storing the information into a suitably formated object
+    function dirParseSync(startDir, result) {
+        let i;
+        let tmpPath;
+        let currFile;
+
+        // Initialize the `result` object if it is the first iteration
+        if (result === undefined) {
+            result = {};
+            result[path.sep] = [];
+        }
+
+        // Check if `startDir` is a valid location
+        if (!fs.existsSync(startDir)) {
+            console.error(startDir + 'is not an existing location');
+        }
+
+        // Iterate throught the contents of the `startDir` location of the current iteration
+        const files = fs.readdirSync(startDir);
+        for (i = 0; i < files.length; i++) {
+            currFile = path.join(startDir, files[i]);
+
+            if (fs.lstatSync(currFile).isDirectory()) {
+                tmpPath = path.relative(localRoot, currFile);
+
+                // Check exclude rules
+                if (lib.canIncludeFile(include, exclude, tmpPath)) {
+                    if (!lib.has(result, tmpPath)) {
+                        result[tmpPath] = [];
+                        partialDirectories.push(tmpPath);
+                    }
+                    dirParseSync(currFile, result);
+                }
+            } else {
+                tmpPath = path.relative(localRoot, startDir);
+                if (tmpPath.length === 0) {
+                    tmpPath = path.sep;
+                }
+
+                // Check exclude rules
+                const partialFilePath = path.join(tmpPath, files[i]);
+                if (lib.canIncludeFile(include, exclude, partialFilePath)) {
+                    result[tmpPath].push(files[i]);
+                    partialFilePaths.push(partialFilePath);
+                }
+            }
+        }
+
+        return result;
+    }
+
     this.deploy = function(config, cb) {
         // Prompt for password if none was given
         if (config.password) {
@@ -131,7 +182,7 @@ const FtpDeployer = function() {
         // ftp.useList = true;
 
         // Get a representation of local files - not used!
-        // let result = dirParseSync(localRoot);
+        dirParseSync(localRoot);
         // console.log(result);
 
         // Authentication and main processing of files
@@ -142,7 +193,6 @@ const FtpDeployer = function() {
                     cb("Auth:", err1, err2);
                 });
             } else {
-                console.log("Authenticated", Object.keys(ftp));
                 ftpMakeDirectoriesIfNeeded(err => {
                     if (err) {
                         // If there was an error creating a remote directory we can't continue to upload files
