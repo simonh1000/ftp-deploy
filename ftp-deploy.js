@@ -33,6 +33,7 @@ const FtpDeployer = function () {
 	let continueOnError = false;
 
 	function canIncludeFile(filePath) {
+		console.log(filePath);
 		let i;
 
 		if (include.length > 0) {
@@ -68,7 +69,8 @@ const FtpDeployer = function () {
 
 		// Check if `startDir` is a valid location
 		if (!fs.existsSync(startDir)) {
-			console.error(startDir + 'is not an existing location');
+			// console.error(startDir + 'is not an existing location');
+			throw new Error(startDir + 'is not an existing location');
 		}
 
 		// Iterate throught the contents of the `startDir` location of the current iteration
