@@ -17,7 +17,7 @@ function canIncludeFile(include, exclude, filePath) {
                 return true;
             }
         }
-        // Fallthrough to exclude list
+        // Fall through to exclude list
     }
 
     if (exclude.length > 0) {
@@ -27,65 +27,51 @@ function canIncludeFile(include, exclude, filePath) {
             }
         }
     }
+    // By default, we will handle the file
     return true;
 }
 
 // A method for parsing the source location and storing the information into a suitably formated object
-function dirParseSync(startDir, include, exclude) {
-    let i;
-    let tmpPath;
-    let currFile;
-    var result = {};
+function parseLocal(include, exclude, localRoot, relDir) {
 
-    // Initialize the `result` object if it is the first iteration
-    if (result === undefined) {
-        result = {};
-        result[path.sep] = [];
-    }
+    // reducer
+    let handleItem = function(acc, item) {
+        const currItem = path.join(fullDir, item);
 
-    // Check if `startDir` is a valid location
-    if (!fs.existsSync(startDir)) {
-        throw new Error(startDir + ' is not an existing location');
-        // console.error(startDir + 'is not an existing location');
-    }
+        if (fs.lstatSync(currItem).isDirectory()) {
+            const subDir = path.relative(localRoot, currItem);
 
-    // Iterate throught the contents of the `startDir` location of the current iteration
-    const files = fs.readdirSync(startDir);
-    for (i = 0; i < files.length; i++) {
-        currFile = path.join(startDir, files[i]);
-
-        if (fs.lstatSync(currFile).isDirectory()) {
-            tmpPath = path.relative(localRoot, currFile);
-
-            // Check exclude rules
-            if (lib.canIncludeFile(include, exclude, tmpPath)) {
-                if (!lib.has(result, tmpPath)) {
-                    result[tmpPath] = [];
-                    // partialDirectories.push(tmpPath);
-                }
-                dirParseSync(currFile, result);
+            if (canIncludeFile(include, exclude, subDir)) {
+                // Match a directory to include. Recurse and attach to accumulator
+                let tmp = parseLocal(include, exclude, localRoot, subDir);
+                return Object.assign(acc, tmp);
             }
+            // Match a directory that must be excluded => halt and return current value
+            return acc
         } else {
-            // is a file
-            tmpPath = path.relative(localRoot, startDir);
-            if (tmpPath.length === 0) {
-                tmpPath = path.sep;
-            }
-
-            // Check exclude rules
-            const partialFilePath = path.join(tmpPath, files[i]);
-            if (lib.canIncludeFile(include, exclude, partialFilePath)) {
-                result[tmpPath].push(files[i]);
-                // partialFilePaths.push(partialFilePath);
-            }
+            // acc[relDir] is always created at previous iteration 
+            acc[relDir].push(item);
+            return acc;
         }
     }
+    
+    const fullDir = path.join(localRoot, relDir)
+    // Check if `startDir` is a valid location
+    if (!fs.existsSync(fullDir)) {
+        throw new Error(fullDir + ' is not an existing location');
+    }
 
-    return result;
+    // Iterate through the contents of the `fullDir` of the current iteration
+    const files = fs.readdirSync(fullDir);
+    // Add empty array, which may get overwritten by subsequent iterations
+    let acc = {};
+    acc[relDir] = [];
+    const res = files.reduce(handleItem, acc);
+    return res;
 }
 
 module.exports = {
     has: has,
     canIncludeFile: canIncludeFile,
-    dirParseSync: dirParseSync
+    parseLocal: parseLocal
 }

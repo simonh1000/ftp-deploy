@@ -16,11 +16,15 @@ let exp = { '/': [ 'test-inside-root.txt' ],
 
 describe('dirParseSync', () => {
     it('should throw on a bad start directory', () => {
-        const testDir = path.join('./throw');
-        assert.throws(() => lib.dirParseSync(testDir), Error);
+        const testDir = './throw';
+        assert.throws(() => lib.parseLocal([],[],testDir,testDir), Error);
     });
-    // it('should traverse test directory', () => {
-    //     const testDir = path.join(__dirname, '../test');
-    //     assert.equal(lib.dirParseSync(testDir), exp);
-    // })
+    it('should traverse simple directory', () => {
+        const rootDir = path.join(__dirname, '../test/simple');
+        assert.deepEqual(lib.parseLocal([], [], rootDir, '/'), {"/": []});
+    })
+    it('should traverse test directory', () => {
+        const rootDir = path.join(__dirname, '../test/local');
+        assert.deepEqual(lib.parseLocal([], [], rootDir, '/'), exp);
+    })
 })
