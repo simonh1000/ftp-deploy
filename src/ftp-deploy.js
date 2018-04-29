@@ -43,6 +43,7 @@ const FtpDeployer = function() {
         };
 
         thisDeployer.emit('uploading', emitData);
+        console.log(fullLocalPath, remoteFilePath);
 
         ftp.put(fullLocalPath, remoteFilePath, err => {
             if (err) {

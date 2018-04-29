@@ -9,8 +9,9 @@
     ],
     "license": "",
     "dependencies": {
-        "jsftp": "2.0.x",
         "async": "2.x.x",
+        "ftpd": "^0.2.15",
+        "jsftp": "2.0.x",
         "minimatch": "3.0.4",
         "read": "1.0.7"
     },
