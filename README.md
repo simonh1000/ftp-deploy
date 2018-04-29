@@ -70,12 +70,10 @@ ftpDeploy.on('uploaded', function(data) {
 To continue uploading files even if a file upload fails: 
 
 ```js
-config.continueOnError = true;
-
-ftpDeploy.deploy(config, function(err) {
-	if (err) console.log(err) // error authenticating or creating/traversing directory
-	else console.log('finished');
-});
+config = {
+  // .. your other configuration here ..
+  continueOnError: true
+};
 
 ftpDeploy.on('upload-error', function (data) {
 	console.log(data.err); // data will also include filename, relativePath, and other goodies
