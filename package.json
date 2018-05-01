@@ -1,20 +1,35 @@
 {
     "name": "ftp-deploy",
     "version": "1.2.2",
-    "author": "Simon Hampton (was Rick Bergfalk)",
+    "author": "Simon Hampton",
     "description": "Ftp a folder from your local disk to an ftp destination. Does not delete from destination directory. Derived from grunt-ftp-deploy",
-    "keywords": [
-        "ftp",
-        "deploy"
-    ],
-    "license": "",
+    "main": "src/ftp-deploy",
     "dependencies": {
         "bluebird": "^3.5.1",
         "minimatch": "3.0.4",
         "promise-ftp": "^1.3.5",
         "read": "^1.0.7"
     },
-    "repository": {
+    "scripts": {
+        "lint": "xo",
+        "lint-fix": "xo --fix",
+        "onlinetest": "node test/test.js",
+        "test": "mocha src/**/**.spec.js",
+        "test_server": "node test/server.js"
+    },
+    "devDependencies": {
+        "delete": "^1.1.0",
+        "chai": "^4.1.2",
+        "ftp-srv": "^2.16.1",
+        "mocha": "^4.1.0",
+        "xo": "^0.18.2"
+    },
+    "keywords": [
+        "ftp",
+        "deploy"
+    ],
+    "license": "",
+   "repository": {
         "type": "git",
         "url": "git://github.com/simonh1000/ftp-deploy"
     },
@@ -26,6 +41,9 @@
     },
     "contributors": [
         {
+            "name": "ORick Bergfalk"
+        },
+        {
             "name": "Ondrej",
             "url": "https://github.com/der-On"
         },
@@ -33,19 +51,5 @@
             "name": "keyle",
             "url": "https://github.com/keyle"
         }
-    ],
-    "scripts": {
-        "lint": "xo",
-        "lint-fix": "xo --fix",
-        "onlinetest": "node test/test.js",
-        "test": "mocha src/**/**.spec.js",
-        "test_server": "node test/server.js"
-    },
-    "main": "ftp-deploy",
-    "devDependencies": {
-        "chai": "^4.1.2",
-        "ftp-srv": "^2.16.1",
-        "mocha": "^4.1.0",
-        "xo": "^0.18.2"
-    }
+    ]
 }

@@ -38,3 +38,5 @@ describe('dirParseSync', () => {
         assert.deepEqual(lib.parseLocal([], ['.DS_Store'], rootDir, '/'), exp2);
     });
 })
+
+// describe.apply.apply.
