@@ -5,3 +5,4 @@ node_modules/
 test/remote
 proftpd.conf
 notes.md
+ignore

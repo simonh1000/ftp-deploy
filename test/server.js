@@ -3,6 +3,13 @@ var ftpd = require("ftpd");
 var _user = "user";
 var _pass = "12345";
 
+var options = {
+    host: process.env.IP || '127.0.0.1',
+    port: process.env.PORT || 7002,
+    tls: null,
+};makeServer(options);
+
+
 function makeServer(options) {
     var server = new ftpd.FtpServer(options.host, {
         getInitialCwd: function () {
@@ -48,6 +55,3 @@ function makeServer(options) {
     return server;
 }
 
-module.exports = {
-    makeServer: makeServer
-};

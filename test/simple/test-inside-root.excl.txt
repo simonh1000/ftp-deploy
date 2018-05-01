@@ -1,0 +1,140 @@
+Skip to content
+This repository
+Search
+Pull requests
+Issues
+Marketplace
+Explore
+ @simonh1000 Sign out
+19
+637 141 sergi/jsftp
+ Code  Issues 24  Pull requests 7  Insights
+FTP client reports successful upload in spite of an error on server #220
+ Open	jkryl opened this issue on 5 Jan 2017 · 9 comments Comments
+Assignees
+No one assigned
+Labels
+None yet
+Milestone
+No milestone
+Notifications
+You’re receiving notifications because you commented.
+5 participants
+@jkryl
+@zshaw-brightcove
+@dustinbolton
+@paresy
+@simonh1000
+@jkryl
+jkryl commented on 5 Jan 2017
+Consider following sequence of commands for uploading a file to FTP server:
+
+<< pasv
+>> 227 Entering Passive Mode (127,0,0,1,139,38)
+<< stor 5433a350-d355-11e6-9e86-d1bd614d1c5f.tar.gz
+>> 150 Ok to send data
+...
+Client opens data connection and starts sending data. Now two things can happen:
+
+If file is successfully saved on the server then server will close the data connection and reply with:
+
+>> 226 Closing data connection
+If there is any kind of error then server closes data connection and replies with:
+
+>> 426 Connection closed; transfer aborted
+Out FTP client ignores anything what happens after closing the data connection and because it does not explicitly check for final 226 status code, it does not notice that upload of a file has failed.
+
+Taking into account broader picture it seems to be a general problem of jsftp implementation (directory listing and file retrieval suffer from the same problem probably) and it stems from the architectural flaw of jsftp implementation which expects FTP protocol to be simple sequence of request - response messages. From RFC 959 section 5.4:
+
+Certain commands require a second reply for which the user should
+      also wait.  These replies may, for example, report on the progress
+      or completion of file transfer or the closing of the data
+      connection.  They are secondary replies to file transfer commands.
+I came up with a patch for STOR command which fixes the problem, however the right fix would be to reimplement the core concept of queue of commands and their callbacks to something more flexible, what is capable of handling multiple responses for a single command in elegant way.
+
+ @zshaw-brightcove
+zshaw-brightcove commented on 16 Feb 2017
+Ahh this is exactly the same problem I am running into with large file downloads #227 (I wish I had seen this earlier :P ) - Did you find a good solution?
+
+jkryl pushed a commit to jkryl/jsftp that referenced this issue on 17 Feb 2017
+ Jan Kryl
+FTP client reports successful upload in spite of an error on server #220  …
+5cac0d5
+@jkryl
+jkryl commented on 17 Feb 2017
+Not a good solution but a temporary fix just for FTP uploads. You can extract the top most commit in my branch based on master and use it to patch your jsftp sources (as I do):
+
+https://github.com/jkryl/jsftp/tree/failed-stor
+
+let me know if it did not work. I might have done a mistake when decoupling the fix from other temporary fixes that I'm using with jsftp.
+
+ @zshaw-brightcove
+zshaw-brightcove commented on 22 Feb 2017
+I appears from my experimentation and reading through the source that https://github.com/mscdex/node-ftp handles get,put, and list correctly
+
+jkryl pushed a commit to jkryl/jsftp that referenced this issue on 23 Feb 2017
+ Jan Kryl
+FTP client reports successful upload in spite of an error on server #220  …
+3625126
+@jkryl
+jkryl commented on 23 Feb 2017
+I got bitten by this problem again. This time with list command. Client does not wait for final answer from list and continues with another command before the previous one finishes and then it is off by one (accepting answer for previous command while it thinks it is for the current one). The client is then unusable.
+
+Indeed it looks that node-ftp is handling this problem in more responsible way. However the fact that latest commit happened more than a year ago raises concern for using it in a project :)
+
+I invested some time into this, trying to come up with a long term solution, taking into account everything what needs to be synchronised (passive connection close, reply from server, fs read/write stream close and errors). And here is the fix: https://github.com/jkryl/jsftp/tree/data-conn-races . It would be great if you could test it and let me know if it works for you before I submit a pull request.
+
+ @zshaw-brightcove
+zshaw-brightcove commented on 23 Feb 2017
+Hey, we had the same concern about node-ftp being sort of dead. But at this point we're going to give it a whirl and fork it if we need to. We just finished our port over node-ftp
+
+I'll take a look through that code when I get a chance.
+
+ @dustinbolton
+dustinbolton commented on 2 Apr 2017 • 
+Great work @jkryl ... looks like it took a good deal of code changes to re-architect for this. I'll be giving your patch a try. Has it shown to be stable for you so far? Would be great to see this as a pull request.
+
+I worry jsftp is going dead as well as @sergi has disappeared from it for 6mo+...
+
+ @jkryl
+jkryl commented on 3 Apr 2017
+The patch works fine for me, although I'm using it for a project where only list and put FTP commands are used. That said I think that get command works fine as well, because all BDD tests are passing. I agree I should probably submit a pull request, although I have the same concern about future of jsftp project...
+
+jkryl pushed a commit to jkryl/jsftp that referenced this issue on 28 Apr 2017
+ Jan Kryl
+FTP client reports successful upload in spite of an error on server #220  …
+13ede7d
+jkryl pushed a commit to jkryl/jsftp that referenced this issue on 3 May 2017
+ Jan Kryl
+FTP client reports successful upload in spite of an error on server #220  …
+3f85948
+@paresy
+paresy commented on 28 May 2017
+Awesome! Thanks. This fixed hanging download for my project. This should fix issue #207 and #235.
+
+ @simonh1000
+  
+simonh1000 commented 3 minutes ago
+has this been merged into master as I feel that I am getting a similar error today
+
+ @simonh1000
+ 
+            
+ 
+ 
+
+Leave a comment
+Attach files by dragging & dropping, , or pasting from the clipboard.  Styling with Markdown is supported
+© 2018 GitHub, Inc.
+Terms
+Privacy
+Security
+Status
+Help
+Contact GitHub
+API
+Training
+Shop
+Blog
+About
+Press h to open a hovercard with more details.
