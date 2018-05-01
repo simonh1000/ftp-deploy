@@ -4,6 +4,7 @@ const util = require("util");
 const read = require("read");
 const readP = util.promisify(read);
 const minimatch = require("minimatch");
+const Promise = require('bluebird');
 
 // P H A S E 0
 
@@ -23,9 +24,9 @@ function getPassword(config) {
 
 // A utility function to remove lodash/underscore dependency
 // Checks an obj for a specified key
-function has(obj, key) {
-    return Object.prototype.hasOwnProperty.call(obj, key);
-}
+// function has(obj, key) {
+//     return Object.prototype.hasOwnProperty.call(obj, key);
+// }
 
 function canIncludePath(include, exclude, filePath) {
     let i;
@@ -101,15 +102,16 @@ function parseLocal(include, exclude, localRootDir, relDir) {
 
 // P H A S E 2
 
-function makeAllAndUpload(remoteDir, filemap) {
+function makeAllAndUpload(ftp, remoteDir, filemap) {
     let keys = Object.keys(filemap);
     return Promise.mapSeries(keys, key => {
-        makeAndUpload(remoteDir, key, ffilemap[key]);
+        console.log("Processing", key, filemap[key]);
+        return makeAndUpload(ftp, remoteDir, key, filemap[key]);
     });
 }
 
 // Creates a remote directory and uploads all of the files in it
-function makeAndUpload(remoteDir, relDir, fnames) {
+function makeAndUpload(ftp, remoteDir, relDir, fnames) {
     return ftp.mkdir(path.join(remoteDir, relDir), true).then(() => {
         return Promise.mapSeries(fnames, fname => {
             let tmp = path.join(relDir, fname);

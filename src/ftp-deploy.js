@@ -28,10 +28,11 @@ const FtpDeployer = function() {
         return ftp
             .connect(config)
             .then(function(serverMessage) {
+                console.log("Connected to:", config.host);
                 console.log("Connected: Server message: " + serverMessage);
-                let filemap = lib.parseLocal(config.localRoot);
-                console.log(filemap);
-                return lib.makeAllAndUpload(filemap);
+                let filemap = lib.parseLocal([],[],config.localRoot, "/");
+                console.log("filemap", filemap);
+                return lib.makeAllAndUpload(ftp, config.remoteRoot, filemap);
             })
             .then(() => {
                 ftp.end();
@@ -56,7 +57,6 @@ const FtpDeployer = function() {
             return this.configComplete(config);
         } else {
             // Prompt for password if none was given
-
             lib.getPassword(config).then(res => {
                 let config2 = Object.assign(config, { password: res });
                 return this.configComplete(config);
