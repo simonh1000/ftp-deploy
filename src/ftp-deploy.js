@@ -3,6 +3,7 @@
 const path = require("path");
 const util = require("util");
 const events = require("events");
+const Promise = require('bluebird');
 
 var PromiseFtp = require("promise-ftp");
 const lib = require("./lib");
@@ -22,20 +23,49 @@ const FtpDeployer = function() {
     // The constructor for the super class.
     events.EventEmitter.call(this);
 
-    let ftp = new PromiseFtp();
+    this.ftp = new PromiseFtp();
 
-    this.configComplete = function(config, cb) {
-        return ftp
+    this.makeAllAndUpload = function(remoteDir, filemap) {
+        let keys = Object.keys(filemap);
+        return Promise.mapSeries(keys, key => {
+            // console.log("Processing", key, filemap[key]);
+            return this.makeAndUpload(remoteDir, key, filemap[key]);
+        });
+    }
+    
+    // Creates a remote directory and uploads all of the files in it
+    this.makeAndUpload = (remoteDir, relDir, fnames) => {
+        return this.ftp.mkdir(path.join(remoteDir, relDir), true).then(() => {
+            return Promise.mapSeries(fnames, fname => {
+                let tmp = path.join(relDir, fname);
+                this.emit('uploading', tmp);
+                return this.ftp
+                    .put(tmp, path.join(remoteDir, relDir, fname))
+                    .then(() => {
+                        this.emit('uploaded', tmp);
+                        return Promise.resolve("uploaded " + tmp);
+                    })
+                    .catch(err => {
+                        this.emit('upload-error', tmp);
+                        // if continue on error....
+                        return Promise.reject(err)
+                    })
+            });
+        });
+    }
+
+    this.configComplete = (config, cb) => {
+        return this.ftp
             .connect(config)
-            .then(function(serverMessage) {
+            .then(serverMessage => {
                 console.log("Connected to:", config.host);
                 console.log("Connected: Server message: " + serverMessage);
                 let filemap = lib.parseLocal([],[],config.localRoot, "/");
                 console.log("filemap", filemap);
-                return lib.makeAllAndUpload(ftp, config.remoteRoot, filemap);
+                return this.makeAllAndUpload(config.remoteRoot, filemap);
             })
             .then(() => {
-                ftp.end();
+                this.ftp.end();
                 if (typeof cb == "function") {
                     cb(null);
                 } else {
@@ -43,7 +73,7 @@ const FtpDeployer = function() {
                 }
             })
             .catch(err => {
-                ftp.end()
+                this.ftp.end()
                 if (typeof cb == "function") {
                     cb(err);
                 } else {

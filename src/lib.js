@@ -4,7 +4,6 @@ const util = require("util");
 const read = require("read");
 const readP = util.promisify(read);
 const minimatch = require("minimatch");
-const Promise = require('bluebird');
 
 // P H A S E 0
 
@@ -100,32 +99,7 @@ function parseLocal(include, exclude, localRootDir, relDir) {
     return res;
 }
 
-// P H A S E 2
-
-function makeAllAndUpload(ftp, remoteDir, filemap) {
-    let keys = Object.keys(filemap);
-    return Promise.mapSeries(keys, key => {
-        console.log("Processing", key, filemap[key]);
-        return makeAndUpload(ftp, remoteDir, key, filemap[key]);
-    });
-}
-
-// Creates a remote directory and uploads all of the files in it
-function makeAndUpload(ftp, remoteDir, relDir, fnames) {
-    return ftp.mkdir(path.join(remoteDir, relDir), true).then(() => {
-        return Promise.mapSeries(fnames, fname => {
-            let tmp = path.join(relDir, fname);
-            return ftp
-                .put(tmp, path.join(remoteDir, relDir, fname))
-                .then(() => {
-                    return Promise.resolve("uploaded " + tmp);
-                });
-        });
-    });
-}
-
 module.exports = {
     getPassword: getPassword,
-    parseLocal: parseLocal,
-    makeAllAndUpload: makeAllAndUpload
+    parseLocal: parseLocal
 };
