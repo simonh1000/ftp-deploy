@@ -5,13 +5,13 @@ const read = require("read");
 const readP = util.promisify(read);
 const minimatch = require("minimatch");
 
-// P H A S E 0
+// P H A S E  0
 
 function getPassword(config) {
     let options = {
         prompt:
             "Password for " +
-            config.username +
+            config.user +
             "@" +
             config.host +
             " (ENTER for none): ",

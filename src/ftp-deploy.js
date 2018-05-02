@@ -73,6 +73,7 @@ const FtpDeployer = function() {
                 }
             })
             .catch(err => {
+                console.log(err);
                 this.ftp.end()
                 if (typeof cb == "function") {
                     cb(err);

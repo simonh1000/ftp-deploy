@@ -2,21 +2,19 @@
 
 A Node.js package to help with deploying code. Ftp a folder from your local disk to a remote ftp destination. Does not delete from destination directory.
 
+Version 2.0.0 is an almost complete re-write to use promises and to move away from jsftp to [ftp-srv](https://github.com/trs/ftp-srv). The one breaking change is listed in the Usage section.
+
 ## Installation
 
 ```js
 npm install --save-dev ftp-deploy
 ```
 
-(Need sftp? Check out [sftp-upload](https://github.com/pirumpi/sftp-upload))
-
-## New maintianer
-
-I've taken over from Rick in May 2017, and will start working on the deprecation warnings, and the 'delete remote directory' requests.
-
 ## Usage
 
 I create a file - e.g. deploy.js - in the root of my source code and add a script to its package.json so that I can `npm run deploy`.
+
+**Note:** that in version 2 the config file expects a field of `user` rahter than `username` in 1.x.
 
 ```json
   "scripts": {
@@ -31,7 +29,7 @@ var FtpDeploy = require('ftp-deploy');
 var ftpDeploy = new FtpDeploy();
 
 var config = {
-	username: "username",
+	user: "user",
 	password: "password", // optional, prompted if none given
 	host: "ftp.someserver.com",
 	port: 21,
@@ -67,7 +65,7 @@ ftpDeploy.on('uploaded', function(data) {
 });
 ```
 
-To continue uploading files even if a file upload fails: 
+To continue uploading files even if a file upload fails (not implemented at present): 
 
 ```js
 config = {
@@ -81,8 +79,6 @@ ftpDeploy.on('upload-error', function (data) {
 ```
 ## Testing 
 
-I use proftpd to create a simple ftp server at test/remote and then run the script at `node ./test/test`
+A script to run a simple ftp server is included at `npm run test_server` and this is needed to run the main tests as `npm test`.
 
-## License 
 
-MIT
