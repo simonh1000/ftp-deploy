@@ -15,6 +15,18 @@ let exp = {
     'folderA/folderB/emptyC/folderD': ['test-inside-d-1.txt', 'test-inside-d-2.txt']
 };
 
+describe('canIncludePath', () => {
+    it('should exclude a directory', () => {
+        assert.ok(!lib.canIncludePath([], [".*/**", ".*"], ".excludeme"));
+    });
+    it('should exclude a file in a directory', () => {
+        assert.ok(!lib.canIncludePath([], [".excludeme/*"], ".excludeme/text.txt"));
+    });
+    it('should exclude a file in a directory', () => {
+        assert.ok(!lib.canIncludePath([], [".*/**"],".excludeme/text.txt"));
+    });
+});
+
 describe('dirParseSync', () => {
     it('should throw on a bad start directory', () => {
         const testDir = './throw';
@@ -30,13 +42,11 @@ describe('dirParseSync', () => {
     });
     it('should respect excludes (directory)', () => {
         const rootDir = path.join(__dirname, '../test/local');
-        assert.deepEqual(lib.parseLocal([], ['.DS_Store', 'FolderC'], rootDir, '/'), exp);
+        assert.deepEqual(lib.parseLocal([], ['.DS_Store', 'FolderC', '.*/**', ".*"], rootDir, '/'), exp);
     });
     it('should traverse test directory', () => {
         const rootDir = path.join(__dirname, '../test/local');
         let exp2 = Object.assign(exp, {"folderA/folderB/FolderC": [ "test-inside-c.txt" ]});
-        assert.deepEqual(lib.parseLocal([], ['.DS_Store'], rootDir, '/'), exp2);
+        assert.deepEqual(lib.parseLocal([], ['.DS_Store', '.*/**', ".*"], rootDir, '/'), exp2);
     });
-})
-
-// describe.apply.apply.
+});

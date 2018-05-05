@@ -26,8 +26,13 @@ function getPassword(config) {
 // function has(obj, key) {
 //     return Object.prototype.hasOwnProperty.call(obj, key);
 // }
-
 function canIncludePath(include, exclude, filePath) {
+    const res = canIncludePathInner(include, exclude, filePath);
+    // console.log("canIncludePath", include, exclude, filePath, res);
+    return res;
+}
+
+function canIncludePathInner(include, exclude, filePath) {
     let i;
 
     if (include.length > 0) {
@@ -55,10 +60,10 @@ function parseLocal(include, exclude, localRootDir, relDir) {
     // reducer
     let handleItem = function(acc, item) {
         const currItem = path.join(fullDir, item);
+        const newRelDir = path.relative(localRootDir, currItem);
 
         if (fs.lstatSync(currItem).isDirectory()) {
             // currItem is a directory
-            const newRelDir = path.relative(localRootDir, currItem);
 
             if (canIncludePath(include, exclude, newRelDir)) {
                 // console.log("recurse into", newRelDir)
@@ -72,7 +77,7 @@ function parseLocal(include, exclude, localRootDir, relDir) {
         } else {
             // currItem is a file
             // acc[relDir] is always created at previous iteration
-            if (canIncludePath(include, exclude, currItem)) {
+            if (canIncludePath(include, exclude, newRelDir)) {
                 // console.log("including", currItem);
                 acc[relDir].push(item);
                 return acc;
@@ -101,5 +106,6 @@ function parseLocal(include, exclude, localRootDir, relDir) {
 
 module.exports = {
     getPassword: getPassword,
-    parseLocal: parseLocal
+    parseLocal: parseLocal,
+    canIncludePath: canIncludePath
 };

@@ -29,7 +29,7 @@ const config = {
     port: 2121,
     localRoot: path.join(__dirname, "../test/local"),
     remoteRoot: "/ftp",
-    exclude: [".*", "tmp/*", "build/*", ".DS_Store"],
+    exclude: [".*", ".excludeme/*", ".DS_Store"],
     debugMode: true
 };
 

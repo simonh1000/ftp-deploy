@@ -51,6 +51,12 @@ ftpDeploy.deploy(config, function(err) {
  * `exclude`: all files that match willnopt be uploaded
  * default: All files that match neither test WILL be uploaded
 
+Note that to exclude a directory and its contents you need to use 
+
+```js
+["excludeme", "excludeme/*"]
+```
+
 To be notified of what ftpDeploy is doing:
 
 ```js
