@@ -58,7 +58,7 @@ const FtpDeployer = function() {
         return this.ftp
             .connect(config)
             .then(serverMessage => {
-                let filemap = lib.parseLocal([],[],config.localRoot, "/");
+                let filemap = lib.parseLocal(config.include, config.exclude, config.localRoot, "/");
                 console.log("Connected to:", config.host);
                 console.log("Connected: Server message: " + serverMessage);
                 // console.log("filemap", filemap);

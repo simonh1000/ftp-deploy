@@ -5,7 +5,7 @@
     "description": "Ftp a folder from your local disk to an ftp destination. Does not delete from destination directory. Derived from grunt-ftp-deploy",
     "main": "src/ftp-deploy",
     "scripts": {
-        "test": "mocha src/**/**.spec.js",
+        "test": "mocha **/**.spec.js",
         "test_server": "node test/server.js"
     },
     "dependencies": {

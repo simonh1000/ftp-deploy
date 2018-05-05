@@ -33,10 +33,10 @@ var config = {
 	password: "password", // optional, prompted if none given
 	host: "ftp.someserver.com",
 	port: 21,
-	localRoot: __dirname + "/local-folder",
-	remoteRoot: "/public_html/remote-folder/",
+	localRoot: __dirname + '/local-folder',
+	remoteRoot: '/public_html/remote-folder/',
 	include: ['*.php', 'dist/*'],
-	exclude: ['.*', 'tmp/*', 'build/*']
+	exclude: ['.*', '*', '*/**']   // excludes all by default
 }
 	
 ftpDeploy.deploy(config, function(err) {
@@ -48,7 +48,7 @@ ftpDeploy.deploy(config, function(err) {
 ## Configuration
 
  * `include`: all files that match will be uploaded.
- * `exclude`: all files that match willnopt be uploaded
+ * `exclude`: all files that match will not be uploaded
  * default: All files that match neither test WILL be uploaded
 
 Note that to exclude a directory and its contents you need to use 
