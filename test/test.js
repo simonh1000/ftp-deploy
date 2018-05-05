@@ -1,32 +1,27 @@
-const path = require('path');
-const FtpDeploy = require('../ftp-deploy.js');
+var FtpDeploy = require('../ftp-deploy.js');
+var ftpDeploy = new FtpDeploy();
 
-const ftpDeploy = new FtpDeploy();
-
-const config = {
-    username: 'simon',
-    password: '', // Optional, prompted if none given
-    host: 'localhost',
+var config = {
+    username: "rickbergfalk",
+    password: "", // optional, prompted if none given
+    host: "localhost",
     port: 21,
-    localRoot: path.join(__dirname, 'local'),
-    remoteRoot: path.join(__dirname, 'remote'),
+    localRoot: __dirname + "/test-root",
+    remoteRoot: "/Users/rickbergfalk/Public/",
     exclude: ['.git', '.idea', 'tmp/*']
 };
 
-ftpDeploy.on('uploaded', data => {
+ftpDeploy.on('uploaded', function (data) {
     console.log('uploaded:');
     console.log(data);
 });
 
-ftpDeploy.on('uploading', data => {
+ftpDeploy.on('uploading', function (data) {
     console.log('uploading');
     console.log(data);
 });
-
-ftpDeploy.deploy(config, err => {
-    if (err) {
-        console.log(err);
-    } else {
-        console.log('finished');
-    }
+    
+ftpDeploy.deploy(config, function(err) {
+    if (err) console.log(err);
+    else console.log('finished');
 });
