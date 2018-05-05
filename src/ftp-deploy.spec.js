@@ -29,7 +29,8 @@ const config = {
     port: 2121,
     localRoot: path.join(__dirname, "../test/local"),
     remoteRoot: "/ftp",
-    exclude: [".*", ".excludeme/*", ".DS_Store"],
+    exclude: [".*", "*", "*/**"],
+    include: ["folderA/**/*", 'test-inside-root.txt'],
     debugMode: true
 };
 

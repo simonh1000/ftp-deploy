@@ -63,17 +63,15 @@ function parseLocal(include, exclude, localRootDir, relDir) {
         const newRelDir = path.relative(localRootDir, currItem);
 
         if (fs.lstatSync(currItem).isDirectory()) {
-            // currItem is a directory
-
-            if (canIncludePath(include, exclude, newRelDir)) {
-                // console.log("recurse into", newRelDir)
-                // Match a directory to include. Recurse and attach to accumulator
-                let tmp = parseLocal(include, exclude, localRootDir, newRelDir);
-                return Object.assign(acc, tmp);
+            // currItem is a directory. Recurse and attach to accumulator
+            let tmp = parseLocal(include, exclude, localRootDir, newRelDir);
+            // console.log("recurse into", newRelDir, tmp);
+            for (let key in tmp) {
+                if (tmp[key].length == 0) {
+                    delete tmp[key];
+                }
             }
-            // Match a directory that must be excluded => halt and return current value
-            // console.log("NOT recursing into", newRelDir)
-            return acc;
+            return Object.assign(acc, tmp);
         } else {
             // currItem is a file
             // acc[relDir] is always created at previous iteration

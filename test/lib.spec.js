@@ -11,7 +11,6 @@ let exp = {
     '/': ['test-inside-root.txt'],
     'folderA': ['test-inside-a.txt'],
     'folderA/folderB': ['test-inside-b.txt'],
-    'folderA/folderB/emptyC': [],
     'folderA/folderB/emptyC/folderD': ['test-inside-d-1.txt', 'test-inside-d-2.txt']
 };
 
@@ -57,7 +56,7 @@ describe('dirParseSync', () => {
     });
     it('should respect excludes (directory)', () => {
         const rootDir = path.join(__dirname, 'local');
-        assert.deepEqual(lib.parseLocal([], ['.DS_Store', 'FolderC', '.*/**', ".*"], rootDir, '/'), exp);
+        assert.deepEqual(lib.parseLocal([], ['.DS_Store', '**/FolderC/*', '.*/**', ".*"], rootDir, '/'), exp);
     });
     it('should respect excludes (directory)', () => {
         assert.deepEqual(lib.parseLocal([], [".*", "*", "*/**"], __dirname, '/'), { '/': [] } );
