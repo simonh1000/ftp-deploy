@@ -36,7 +36,7 @@ var config = {
 	localRoot: __dirname + '/local-folder',
 	remoteRoot: '/public_html/remote-folder/',
 	include: ['*.php', 'dist/*'],
-	exclude: ['.*', '*', '*/**']   // excludes all by default
+	exclude: ['dist/**/*.map']   // e.g. exclude sourcemaps
 }
 	
 ftpDeploy.deploy(config, function(err) {
@@ -49,6 +49,8 @@ ftpDeploy.deploy(config, function(err) {
 
  * `include`: all files that match will be uploaded. Note that a `[ ]` matches nothing
  * `exclude`: if a file matches the include pattern it may nonetheless be excluded
+
+## Events
 
 To be notified of what ftpDeploy is doing:
 
@@ -67,11 +69,6 @@ ftpDeploy.on('uploaded', function(data) {
 To continue uploading files even if a file upload fails (not implemented at present): 
 
 ```js
-config = {
-  // .. your other configuration here ..
-  continueOnError: true
-};
-
 ftpDeploy.on('upload-error', function (data) {
 	console.log(data.err); // data will also include filename, relativePath, and other goodies
 });
@@ -80,4 +77,6 @@ ftpDeploy.on('upload-error', function (data) {
 
 A script to run a simple ftp server is included at `npm run test_server` and this is needed to run the main tests as `npm test`.
 
-
+## ToDo
+ 
+re-enable continueOnError

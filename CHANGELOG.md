@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.0
+    - complete rewrite using promises
+    - switch from jsftp to ftp-srv
+    - breaks continueOnError
+    - format using prettier
+
 ## 1.2.0
     - Adds an optional config.include which supersedes any exclusion rules.
     - Linting code cleanup via xo style/tool
