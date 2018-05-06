@@ -6,11 +6,12 @@ const homeDir =
 const FtpSrv = require("ftp-srv");
 
 const options = {
-    greeting: ["greeting from test ftp server"]
+    greeting: ["test ftp server", homeDir]
 };
 
 // Using non-standard port
-const ftpServer = new FtpSrv("ftp://127.0.0.1:2121", options);
+const port = 2121;
+const ftpServer = new FtpSrv("ftp://127.0.0.1:"+port, options);
 
 ftpServer.on("login", ({ connection, username, password }, resolve, reject) => {
     console.log("Connection by", username);
@@ -21,7 +22,7 @@ ftpServer.on("login", ({ connection, username, password }, resolve, reject) => {
 ftpServer
     .listen()
     .then(() => {
-        console.log("listening");
+        console.log("listening on " + port);
     })
     .catch(err => {
         console.log(err);

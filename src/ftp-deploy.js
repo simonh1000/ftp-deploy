@@ -19,20 +19,20 @@ const lib = require("./lib");
 }
 */
 
-const FtpDeployer = function() {
+const FtpDeployer = function () {
     // The constructor for the super class.
     events.EventEmitter.call(this);
 
     this.ftp = new PromiseFtp();
 
-    this.makeAllAndUpload = function(remoteDir, filemap) {
+    this.makeAllAndUpload = function (remoteDir, filemap) {
         let keys = Object.keys(filemap);
         return Promise.mapSeries(keys, key => {
             // console.log("Processing", key, filemap[key]);
             return this.makeAndUpload(remoteDir, key, filemap[key]);
         });
     }
-    
+
     // Creates a remote directory and uploads all of the files in it
     this.makeAndUpload = (remoteDir, relDir, fnames) => {
         return this.ftp.mkdir(path.join(remoteDir, relDir), true).then(() => {
@@ -83,7 +83,7 @@ const FtpDeployer = function() {
             });
     };
 
-    this.deploy = function(config, cb) {
+    this.deploy = function (config, cb) {
         if (config.password) {
             return this.configComplete(config);
         } else {

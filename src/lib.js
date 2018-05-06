@@ -38,7 +38,7 @@ function canIncludePath(includes, excludes, filePath) {
 // A method for parsing the source location and storing the information into a suitably formated object
 function parseLocal(includes, excludes, localRootDir, relDir) {
     // reducer
-    let handleItem = function(acc, item) {
+    let handleItem = function (acc, item) {
         const currItem = path.join(fullDir, item);
         const newRelDir = path.relative(localRootDir, currItem);
 
