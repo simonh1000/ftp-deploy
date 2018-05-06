@@ -5,6 +5,7 @@
     - switch from jsftp to ftp-srv
     - breaks continueOnError
     - format using prettier
+    - adds tests
 
 ## 1.2.0
     - Adds an optional config.include which supersedes any exclusion rules.
