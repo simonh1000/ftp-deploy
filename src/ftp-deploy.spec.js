@@ -11,17 +11,6 @@ const statP = utils.promisify(fs.stat);
 const del = require("delete");
 const FtpDeploy = require("./ftp-deploy");
 
-let exp = {
-    "/": ["test-inside-root.txt"],
-    folderA: ["test-inside-a.txt"],
-    "folderA/folderB": ["test-inside-b.txt"],
-    "folderA/folderB/emptyC": [],
-    "folderA/folderB/emptyC/folderD": [
-        "test-inside-d-1.txt",
-        "test-inside-d-2.txt"
-    ]
-};
-
 const config = {
     user: "anonymous",
     password: "anon", // Optional, prompted if none given
@@ -29,7 +18,7 @@ const config = {
     port: 2121,
     localRoot: path.join(__dirname, "../test/local"),
     remoteRoot: "/ftp",
-    exclude: [".*", "*", "*/**"],
+    exclude: [],
     include: ["folderA/**/*", 'test-inside-root.txt'],
     debugMode: true
 };

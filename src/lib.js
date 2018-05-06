@@ -21,42 +21,22 @@ function getPassword(config) {
     return readP(options);
 }
 
-// A utility function to remove lodash/underscore dependency
-// Checks an obj for a specified key
-// function has(obj, key) {
-//     return Object.prototype.hasOwnProperty.call(obj, key);
-// }
-function canIncludePath(include, exclude, filePath) {
-    const res = canIncludePathInner(include, exclude, filePath);
-    // console.log("canIncludePath", include, exclude, filePath, res);
-    return res;
-}
+function canIncludePath(includes, excludes, filePath) {
+    let go = ((acc, item) => acc || minimatch(filePath, item, { matchBase: true }))
+    let canInclude = includes.reduce(go, false);
 
-function canIncludePathInner(include, exclude, filePath) {
-    let i;
-
-    if (include.length > 0) {
-        for (i = 0; i < include.length; i++) {
-            if (minimatch(filePath, include[i], { matchBase: true })) {
-                return true;
-            }
-        }
-        // Fall through to exclude list
+    // Now check whether the file should in fact be specifically excluded
+    if (canInclude) {
+        // if any excludes match return false
+        let go2 = ((acc, item) => acc && !minimatch(filePath, item, { matchBase: true }))
+        canInclude = excludes.reduce(go2, true);
     }
-
-    if (exclude.length > 0) {
-        for (i = 0; i < exclude.length; i++) {
-            if (minimatch(filePath, exclude[i], { matchBase: true })) {
-                return false;
-            }
-        }
-    }
-    // By default, we will handle the file
-    return true;
+    // console.log("canIncludePath", include, filePath, res);
+    return canInclude;
 }
 
 // A method for parsing the source location and storing the information into a suitably formated object
-function parseLocal(include, exclude, localRootDir, relDir) {
+function parseLocal(includes, excludes, localRootDir, relDir) {
     // reducer
     let handleItem = function(acc, item) {
         const currItem = path.join(fullDir, item);
@@ -64,7 +44,7 @@ function parseLocal(include, exclude, localRootDir, relDir) {
 
         if (fs.lstatSync(currItem).isDirectory()) {
             // currItem is a directory. Recurse and attach to accumulator
-            let tmp = parseLocal(include, exclude, localRootDir, newRelDir);
+            let tmp = parseLocal(includes, excludes, localRootDir, newRelDir);
             // console.log("recurse into", newRelDir, tmp);
             for (let key in tmp) {
                 if (tmp[key].length == 0) {
@@ -75,7 +55,7 @@ function parseLocal(include, exclude, localRootDir, relDir) {
         } else {
             // currItem is a file
             // acc[relDir] is always created at previous iteration
-            if (canIncludePath(include, exclude, newRelDir)) {
+            if (canIncludePath(includes, excludes, newRelDir)) {
                 // console.log("including", currItem);
                 acc[relDir].push(item);
                 return acc;
