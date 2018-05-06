@@ -53,4 +53,16 @@ describe("deploy", () => {
                 return statP(remoteDir + "/test-inside-root.txt");
             });
     });
+    it("should put a dot file", () => {
+        const d = new FtpDeploy();
+        return del(remoteDir)
+            .then(() => {
+                config.include = ['.*'];
+                return d.deploy(config);
+            })
+            .then(() => {
+                // Should reject if file does not exist
+                return statP(remoteDir + "/.testfile");
+            });
+    });
 });
