@@ -29,7 +29,7 @@ var FtpDeploy = require('ftp-deploy');
 var ftpDeploy = new FtpDeploy();
 
 var config = {
-	user: "user",
+	user: "user",  // NOTE that this was username in 1.x 
 	password: "password", // optional, prompted if none given
 	host: "ftp.someserver.com",
 	port: 21,
@@ -47,8 +47,10 @@ ftpDeploy.deploy(config, function(err) {
 
 ## Configuration
 
+You need to list all fie patterns that you want to include for uploading, and the exclude option enables exceptions to the rule
+
  * `include`: all files that match will be uploaded. Note that a `[ ]` matches nothing
- * `exclude`: if a file matches the include pattern it may nonetheless be excluded
+ * `exclude`: if a file matches the include pattern a subset may nonetheless be excluded
 
 ## Events
 
