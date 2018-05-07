@@ -84,15 +84,9 @@ const FtpDeployer = function () {
     };
 
     this.deploy = function (config, cb) {
-        if (config.password) {
-            return this.configComplete(config);
-        } else {
-            // Prompt for password if none was given
-            lib.getPassword(config).then(res => {
-                let config2 = Object.assign(config, { password: res });
-                return this.configComplete(config);
-            });
-        }
+        return lib.checkIncludes(config)
+            .then(lib.getPassword)
+            .then(config => this.configComplete(config, cb));
     };
 };
 

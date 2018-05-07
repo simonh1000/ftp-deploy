@@ -38,7 +38,13 @@ var config = {
 	include: ['*.php', 'dist/*'],
 	exclude: ['dist/**/*.map']   // e.g. exclude sourcemaps
 }
+
+// use with promises
+ftpDeploy.deploy(config)
+	.then(res => console.log('finished'))
+	.catch(err => console.log(err))
 	
+// use with callback
 ftpDeploy.deploy(config, function(err) {
 	if (err) console.log(err)
 	else console.log('finished');

@@ -7,18 +7,34 @@ const minimatch = require("minimatch");
 
 // P H A S E  0
 
+function checkIncludes(config) {
+    if (!config.include || !config.include.length) {
+        return Promise.reject({code: "NoIncludes", message: "You are not including any files to upload"});
+    } else {
+        return Promise.resolve(config)
+    }
+}
+
 function getPassword(config) {
-    let options = {
-        prompt:
-            "Password for " +
-            config.user +
-            "@" +
-            config.host +
-            " (ENTER for none): ",
-        default: "",
-        silent: true
-    };
-    return readP(options);
+    if (config.password) {
+        return Promise.resolve(config)
+    } else {
+        let options = {
+            prompt:
+                "Password for " +
+                config.user +
+                "@" +
+                config.host +
+                " (ENTER for none): ",
+            default: "",
+            silent: true
+        };
+        return readP(options)
+            .then(res => {
+                let config2 = Object.assign(config, { password: res });
+                return config2;
+            });
+    }
 }
 
 function canIncludePath(includes, excludes, filePath) {
@@ -83,6 +99,7 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
 }
 
 module.exports = {
+    checkIncludes: checkIncludes,
     getPassword: getPassword,
     parseLocal: parseLocal,
     canIncludePath: canIncludePath

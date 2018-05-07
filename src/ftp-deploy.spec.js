@@ -42,6 +42,21 @@ describe("deploy", () => {
                 }
             });
     });
+    it("should fail with no include", () => {
+        const d = new FtpDeploy();
+        return del(remoteDir)
+            .then(() => {
+                let c2 = Object.assign({}, config, {include: []});
+                return d.deploy(c2);
+            })
+            .catch(err => {
+                if (err.code === 'NoIncludes') {
+                    return Promise.resolve("got expected error")
+                } else {
+                    return Promise.reject(err)
+                }
+        });
+    });
     it("should put a file", () => {
         const d = new FtpDeploy();
         return del(remoteDir)
