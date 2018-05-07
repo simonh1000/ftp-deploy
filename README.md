@@ -53,7 +53,7 @@ ftpDeploy.deploy(config, function(err) {
 
 ## Configuration
 
-You need to list all fie patterns that you want to include for uploading, and the exclude option enables exceptions to the rule
+You need to list all file patterns that you want to include for uploading, and the exclude option enables exceptions to the rule
 
  * `include`: all files that match will be uploaded. Note that a `[ ]` matches nothing
  * `exclude`: if a file matches the include pattern a subset may nonetheless be excluded
