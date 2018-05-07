@@ -4,6 +4,7 @@
     - complete rewrite using promises
     - switch from jsftp to ftp-srv
     - breaks continueOnError
+    - config must now include an include field with non-empty value. E.g. use ['*'] for all files at root level
     - format using prettier
     - adds tests
 

@@ -8,8 +8,9 @@ const minimatch = require("minimatch");
 // P H A S E  0
 
 function checkIncludes(config) {
+    config.excludes = config.excludes || [];
     if (!config.include || !config.include.length) {
-        return Promise.reject({code: "NoIncludes", message: "You are not including any files to upload"});
+        return Promise.reject({code: "NoIncludes", message: "You need to specify files to upload - e.g. ['*', '**/*']"});
     } else {
         return Promise.resolve(config)
     }

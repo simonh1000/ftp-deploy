@@ -35,6 +35,7 @@ var config = {
 	port: 21,
 	localRoot: __dirname + '/local-folder',
 	remoteRoot: '/public_html/remote-folder/',
+	// include: ['*', '**/*'],  // this would upload everything except dot files
 	include: ['*.php', 'dist/*'],
 	exclude: ['dist/**/*.map']   // e.g. exclude sourcemaps
 }
@@ -55,7 +56,7 @@ ftpDeploy.deploy(config, function(err) {
 
 You need to list all file patterns that you want to include for uploading, and the exclude option enables exceptions to the rule
 
- * `include`: all files that match will be uploaded. Note that a `[ ]` matches nothing
+ * `include`: all files that match will be uploaded. **Note** that a `[ ]` matches nothing
  * `exclude`: if a file matches the include pattern a subset may nonetheless be excluded
 
 ## Events
