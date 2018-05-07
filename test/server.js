@@ -25,5 +25,5 @@ ftpServer
         console.log("listening on " + port);
     })
     .catch(err => {
-        console.log(err);
+        console.log("[error]", err);
     });

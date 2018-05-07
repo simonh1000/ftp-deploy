@@ -22,8 +22,7 @@ const lib = require("./lib");
 const FtpDeployer = function () {
     // The constructor for the super class.
     events.EventEmitter.call(this);
-
-    this.ftp = new PromiseFtp();
+    this.ftp = null;
 
     this.makeAllAndUpload = function (remoteDir, filemap) {
         let keys = Object.keys(filemap);
@@ -54,7 +53,9 @@ const FtpDeployer = function () {
         });
     }
 
-    this.configComplete = (config, cb) => {
+    this.configComplete = (config) => {
+        this.ftp = new PromiseFtp();
+
         return this.ftp
             .connect(config)
             .then(serverMessage => {
@@ -64,6 +65,12 @@ const FtpDeployer = function () {
                 // console.log("filemap", filemap);
                 return this.makeAllAndUpload(config.remoteRoot, filemap);
             })
+    };
+
+    this.deploy = function (config, cb) {
+        return lib.checkIncludes(config)
+            .then(lib.getPassword)
+            .then(config => this.configComplete(config))
             .then(() => {
                 this.ftp.end();
                 if (typeof cb == "function") {
@@ -73,20 +80,14 @@ const FtpDeployer = function () {
                 }
             })
             .catch(err => {
-                console.log(err);
-                this.ftp.end()
+                if (this.ftp) this.ftp.end();
+                console.log("Failed", typeof cb);
                 if (typeof cb == "function") {
                     cb(err);
                 } else {
                     return Promise.reject(err);
                 }
             });
-    };
-
-    this.deploy = function (config, cb) {
-        return lib.checkIncludes(config)
-            .then(lib.getPassword)
-            .then(config => this.configComplete(config, cb));
     };
 };
 

@@ -19,3 +19,11 @@ d.deploy(config)
     .then(() => {
         console.log("Done");
     });
+
+// d.deploy(config, function(err) {
+//     if (err) {
+//         console.log("error", err);
+//     } else {
+//         console.log("Done :-)")
+//     }
+// })
