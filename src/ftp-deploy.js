@@ -1,6 +1,6 @@
 "use strict";
 
-const path = require("path");
+const upath = require("upath");
 const util = require("util");
 const events = require("events");
 const Promise = require('bluebird');
@@ -40,16 +40,16 @@ const FtpDeployer = function () {
 
     // Creates a remote directory and uploads all of the files in it
     this.makeAndUpload = (remoteDir, relDir, fnames) => {
-        return this.ftp.mkdir(path.join(remoteDir, relDir), true).then(() => {
+        return this.ftp.mkdir(upath.join(remoteDir, relDir), true).then(() => {
             return Promise.mapSeries(fnames, fname => {
-                let tmpFileName = path.join(this.config.localRoot, relDir, fname);
+                let tmpFileName = upath.join(this.config.localRoot, relDir, fname);
                 let tmp = fs.readFileSync(tmpFileName);
-                this.eventObject['filename'] = path.join(relDir, fname);
+                this.eventObject['filename'] = upath.join(relDir, fname);
 
                 this.emit('uploading', this.eventObject);
 
                 return this.ftp
-                    .put(tmp, path.join(remoteDir, relDir, fname))
+                    .put(tmp, upath.join(remoteDir, relDir, fname))
                     .then(() => {
                         this.eventObject.transferredFileCount++;
                         this.emit('uploaded', this.eventObject);

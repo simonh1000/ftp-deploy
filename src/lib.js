@@ -106,6 +106,7 @@ function countFiles(filemap) {
         .reduce((acc, item) => acc.concat(item))
         .length
 }
+
 module.exports = {
     checkIncludes: checkIncludes,
     getPassword: getPassword,
