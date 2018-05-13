@@ -12,7 +12,7 @@ const minimatch = require("minimatch");
 function checkIncludes(config) {
     config.excludes = config.excludes || [];
     if (!config.include || !config.include.length) {
-        return Promise.reject({code: "NoIncludes", message: "You need to specify files to upload - e.g. ['*', '**/*']"});
+        return Promise.reject({ code: "NoIncludes", message: "You need to specify files to upload - e.g. ['*', '**/*']" });
     } else {
         return Promise.resolve(config)
     }
@@ -109,32 +109,27 @@ function countFiles(filemap) {
         .length
 }
 
-function deleteFiles(ftp, fnames) {
-    return Promise.mapSeries(fnames, fname => ftp.delete(fname))
-}
-
 function deleteDir(ftp, dir) {
     return ftp.list(dir)
         .then(lst => {
             console.log(lst);
             let dirNames =
                 lst
-                    .filter((f) => f.type == 'd')
+                    .filter(f => f.type == 'd')
                     .map(f => path.join(dir, f.name));
 
-            let dirPromises = Promise.mapSeries(dirNames, dirName => {
-                // deletes everything from next directory down, and then itself
-                return deleteDir(ftp, dirName)
-                    .then(() => ftp.delete(dirName));
-            })
-
-            let fileNames =
+            let fnames =
                 lst
-                    .filter((f) => f.type != 'd')
+                    .filter(f => f.type != 'd')
                     .map(f => path.join(dir, f.name));
 
-            return dirPromises.then(() => deleteFiles(ftp, fileNames));
-        })
+            // delete sub-directories and then all files
+            return Promise.mapSeries(dirNames, dirName => {
+                // deletes everything in sub-directory, and then itself
+                return deleteDir(ftp, dirName).then(() => ftp.delete(dirName));
+            })
+                .then(() => Promise.mapSeries(fnames, fname => ftp.delete(fname)));
+        });
 }
 
 module.exports = {
@@ -143,6 +138,5 @@ module.exports = {
     parseLocal: parseLocal,
     canIncludePath: canIncludePath,
     countFiles: countFiles,
-    deleteFiles: deleteFiles,
     deleteDir: deleteDir
 };

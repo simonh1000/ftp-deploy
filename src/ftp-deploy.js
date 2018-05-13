@@ -40,17 +40,17 @@ const FtpDeployer = function () {
 
     // Creates a remote directory and uploads all of the files in it
     // Resolves a confirmation message on success
-    this.makeAndUpload = (remoteDir, relDir, fnames) => {
-        return this.ftp.mkdir(path.join(remoteDir, relDir), true).then(() => {
+    this.makeAndUpload = (config, relDir, fnames) => {
+        return this.ftp.mkdir(path.join(config.remoteRoot, relDir), true).then(() => {
             return Promise.mapSeries(fnames, fname => {
-                let tmpFileName = path.join(this.config.localRoot, relDir, fname);
+                let tmpFileName = path.join(config.localRoot, relDir, fname);
                 let tmp = fs.readFileSync(tmpFileName);
                 this.eventObject['filename'] = path.join(relDir, fname);
 
                 this.emit('uploading', this.eventObject);
 
                 return this.ftp
-                    .put(tmp, path.join(remoteDir, relDir, fname))
+                    .put(tmp, path.join(config.remoteRoot, relDir, fname))
                     .then(() => {
                         this.eventObject.transferredFileCount++;
                         this.emit('uploaded', this.eventObject);
@@ -88,15 +88,14 @@ const FtpDeployer = function () {
         // console.log("filemap", filemap);
         this.eventObject['totalFilesCount'] = lib.countFiles(filemap);
 
-        return this.makeAllAndUpload(config.remoteRoot, filemap);
+        return this.makeAllAndUpload(config, filemap);
     };
 
     // Deletes remote directory if requested by config
+    // Returns config 
     this.deleteRemote = (config) => {
-        // if user requests delete then iterate over ....
         if (config.deleteRemote) {
-            console.log("I need to delete remote");
-            // this.ftp.delete(config.remoteRoot);
+            // console.log("I need to delete remote");
             return lib.deleteDir(this.ftp, config.remoteRoot)
                 .then(() => config);
         }
@@ -104,8 +103,6 @@ const FtpDeployer = function () {
     };
 
     this.deploy = function (config, cb) {
-        this.config = config;
-
         return lib.checkIncludes(config)
             .then(lib.getPassword)
             .then(this.connect)
