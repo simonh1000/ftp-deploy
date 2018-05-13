@@ -24,6 +24,11 @@ const FtpDeployer = function () {
     // The constructor for the super class.
     events.EventEmitter.call(this);
     this.ftp = null;
+    this.eventObject = {
+        totalFilesCount: 0,
+        transferredFileCount: 1,
+        filename: ''
+    };
 
     this.makeAllAndUpload = function (remoteDir, filemap) {
         let keys = Object.keys(filemap);
@@ -37,16 +42,22 @@ const FtpDeployer = function () {
     this.makeAndUpload = (remoteDir, relDir, fnames) => {
         return this.ftp.mkdir(path.join(remoteDir, relDir), true).then(() => {
             return Promise.mapSeries(fnames, fname => {
-                let tmp = fs.readFileSync(path.join(this.config.localRoot, relDir, fname));
-                this.emit('uploading', tmp);
+                let tmpFileName = path.join(this.config.localRoot, relDir, fname);
+                let tmp = fs.readFileSync(tmpFileName);
+                this.eventObject['filename'] = path.join(relDir, fname);
+
+                this.emit('uploading', this.eventObject);
+
                 return this.ftp
                     .put(tmp, path.join(remoteDir, relDir, fname))
                     .then(() => {
-                        this.emit('uploaded', tmp);
-                        return Promise.resolve("uploaded " + tmp);
+                        this.eventObject.transferredFileCount++;
+                        this.emit('uploaded', this.eventObject);
+                        return Promise.resolve("uploaded " + tmpFileName);
                     })
                     .catch(err => {
-                        this.emit('upload-error', tmp);
+                        this.eventObject["error"] = err;
+                        this.emit('upload-error', this.eventObject);
                         // if continue on error....
                         return Promise.reject(err)
                     })
@@ -54,6 +65,7 @@ const FtpDeployer = function () {
         });
     }
 
+    // creates list of all files to upload and starts upload process
     this.configComplete = (config) => {
         this.ftp = new PromiseFtp();
 
@@ -63,7 +75,10 @@ const FtpDeployer = function () {
                 let filemap = lib.parseLocal(config.include, config.exclude, config.localRoot, "/");
                 console.log("Connected to:", config.host);
                 console.log("Connected: Server message: " + serverMessage);
+                
                 // console.log("filemap", filemap);
+                this.eventObject['totalFilesCount'] = lib.countFiles(filemap);
+
                 return this.makeAllAndUpload(config.remoteRoot, filemap);
             })
     };

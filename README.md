@@ -67,7 +67,6 @@ To be notified of what ftpDeploy is doing:
 ftpDeploy.on('uploading', function(data) {
     data.totalFileCount;       // total file count being transferred
     data.transferredFileCount; // number of files transferred
-    data.percentComplete;      // percent as a number 1 - 100
     data.filename;             // partial path with filename being uploaded
 });
 ftpDeploy.on('uploaded', function(data) {

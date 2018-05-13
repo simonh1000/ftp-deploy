@@ -38,6 +38,8 @@ function getPassword(config) {
     }
 }
 
+// Analysing local firstory 
+
 function canIncludePath(includes, excludes, filePath) {
     let go = ((acc, item) => acc || minimatch(filePath, item, { matchBase: true }))
     let canInclude = includes.reduce(go, false);
@@ -99,9 +101,15 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
     return res;
 }
 
+function countFiles(filemap) {
+    return Object.values(filemap)
+        .reduce((acc, item) => acc.concat(item))
+        .length
+}
 module.exports = {
     checkIncludes: checkIncludes,
     getPassword: getPassword,
     parseLocal: parseLocal,
-    canIncludePath: canIncludePath
+    canIncludePath: canIncludePath,
+    countFiles: countFiles
 };

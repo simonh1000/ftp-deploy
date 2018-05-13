@@ -14,16 +14,12 @@ const config = {
     include: ["folderA/**/*", 'test-inside-root.txt']
 };
 
-const d = new FtpDeploy();
-d.deploy(config)
-    .then(() => {
-        console.log("Done");
-    });
+const ftpDeploy = new FtpDeploy();
 
-// d.deploy(config, function(err) {
-//     if (err) {
-//         console.log("error", err);
-//     } else {
-//         console.log("Done :-)")
-//     }
-// })
+// use with promises
+ftpDeploy.deploy(config)
+    .then(res => console.log('finished'))
+    .catch(err => console.log(err))
+
+// ftpDeploy.on('uploading', data => console.log('uploading', data));
+ftpDeploy.on('uploading', data => console.log('uploaded', data));

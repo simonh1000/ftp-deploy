@@ -1,6 +1,6 @@
 {
     "name": "ftp-deploy",
-    "version": "2.0.4",
+    "version": "2.0.5",
     "author": "Simon Hampton",
     "description": "Ftp a folder from your local disk to an ftp destination. Does not delete from destination directory. Derived from grunt-ftp-deploy",
     "main": "src/ftp-deploy",
