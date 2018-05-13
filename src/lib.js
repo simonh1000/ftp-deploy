@@ -112,11 +112,37 @@ function countFiles(filemap) {
 function deleteFiles(ftp, fnames) {
     return Promise.mapSeries(fnames, fname => ftp.delete(fname))
 }
+
+function deleteDir(ftp, dir) {
+    return ftp.list(dir)
+        .then(lst => {
+            console.log(lst);
+            let dirNames =
+                lst
+                    .filter((f) => f.type == 'd')
+                    .map(f => path.join(dir, f.name));
+
+            let dirPromises = Promise.mapSeries(dirNames, dirName => {
+                // deletes everything from next directory down, and then itself
+                return deleteDir(ftp, dirName)
+                    .then(() => ftp.delete(dirName));
+            })
+
+            let fileNames =
+                lst
+                    .filter((f) => f.type != 'd')
+                    .map(f => path.join(dir, f.name));
+
+            return dirPromises.then(() => deleteFiles(ftp, fileNames));
+        })
+}
+
 module.exports = {
     checkIncludes: checkIncludes,
     getPassword: getPassword,
     parseLocal: parseLocal,
     canIncludePath: canIncludePath,
     countFiles: countFiles,
-    deleteFiles: deleteFiles
+    deleteFiles: deleteFiles,
+    deleteDir: deleteDir
 };

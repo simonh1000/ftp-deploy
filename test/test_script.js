@@ -12,7 +12,9 @@ const config = {
     remoteRoot: "/ftp",
     deleteRemote: true,
     exclude: [],
-    include: ["folderA/**/*", 'test-inside-root.txt']
+    // include: ["*", ".*", "folderA/**/*", 'test-inside-root.txt']
+    include: ["**/*", "*", ".*"]
+    // include: ["nothing"]
 };
 
 const ftpDeploy = new FtpDeploy();
