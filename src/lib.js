@@ -2,6 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const read = require("read");
+
+const Promise = require('bluebird');
 const readP = util.promisify(read);
 const minimatch = require("minimatch");
 
@@ -106,10 +108,15 @@ function countFiles(filemap) {
         .reduce((acc, item) => acc.concat(item))
         .length
 }
+
+function deleteFiles(ftp, fnames) {
+    return Promise.mapSeries(fnames, fname => ftp.delete(fname))
+}
 module.exports = {
     checkIncludes: checkIncludes,
     getPassword: getPassword,
     parseLocal: parseLocal,
     canIncludePath: canIncludePath,
-    countFiles: countFiles
+    countFiles: countFiles,
+    deleteFiles: deleteFiles
 };
