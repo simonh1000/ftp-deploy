@@ -2,7 +2,7 @@
 
 A Node.js package to help with deploying code. Ftp a folder from your local disk to a remote ftp destination. Does not delete from destination directory.
 
-Version 2.0.0 is an almost complete re-write to use promises and to move away from jsftp to [ftp-srv](https://github.com/trs/ftp-srv). The one breaking change is listed in the Usage section.
+Version 2.0.0 is an almost complete re-write to use promises and [ftp-srv](https://github.com/trs/ftp-srv) instead of jsftp. The one breaking change is listed in the Usage section.
 
 ## Installation
 
@@ -14,30 +14,30 @@ npm install --save-dev ftp-deploy
 
 I create a file - e.g. deploy.js - in the root of my source code and add a script to its package.json so that I can `npm run deploy`.
 
-**Note:** that in version 2 the config file expects a field of `user` rahter than `username` in 1.x.
-
 ```json
-  "scripts": {
+"scripts": {
     "deploy": "node deploy"
-  },
+},
 ```
 
 The most basic usage (stops uploading when an error occurs):
+**Note:** that in version 2 the config file expects a field of `user` rather than `username` in 1.x.
 
 ```js
 var FtpDeploy = require('ftp-deploy');
 var ftpDeploy = new FtpDeploy();
 
 var config = {
-	user: "user",  // NOTE that this was username in 1.x 
-	password: "password", // optional, prompted if none given
+	user: "user",                   // NOTE that this was username in 1.x 
+    password: "password",           // optional, prompted if none given
 	host: "ftp.someserver.com",
 	port: 21,
 	localRoot: __dirname + '/local-folder',
 	remoteRoot: '/public_html/remote-folder/',
-	// include: ['*', '**/*'],  // this would upload everything except dot files
+	// include: ['*', '**/*'],      // this would upload everything except dot files
 	include: ['*.php', 'dist/*'],
-	exclude: ['dist/**/*.map']   // e.g. exclude sourcemaps
+    exclude: ['dist/**/*.map'],     // e.g. exclude sourcemaps
+    deleteRoot: true                // delete existing files at destination before uploading
 }
 
 // use with promises
