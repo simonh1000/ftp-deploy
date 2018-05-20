@@ -112,7 +112,7 @@ function countFiles(filemap) {
 function deleteDir(ftp, dir) {
     return ftp.list(dir)
         .then(lst => {
-            console.log(lst);
+            console.log("Deleting directory:", dir);
             let dirNames =
                 lst
                     .filter(f => f.type == 'd')
