@@ -1,6 +1,6 @@
 "use strict";
 
-const path = require("path");
+const upath = require("upath");
 const util = require("util");
 const events = require("events");
 const Promise = require('bluebird');
@@ -41,16 +41,16 @@ const FtpDeployer = function () {
     // Creates a remote directory and uploads all of the files in it
     // Resolves a confirmation message on success
     this.makeAndUpload = (config, relDir, fnames) => {
-        return this.ftp.mkdir(path.join(config.remoteRoot, relDir), true).then(() => {
+        return this.ftp.mkdir(upath.join(config.remoteRoot, relDir), true).then(() => {
             return Promise.mapSeries(fnames, fname => {
-                let tmpFileName = path.join(config.localRoot, relDir, fname);
+                let tmpFileName = upath.join(config.localRoot, relDir, fname);
                 let tmp = fs.readFileSync(tmpFileName);
-                this.eventObject['filename'] = path.join(relDir, fname);
+                this.eventObject['filename'] = upath.join(relDir, fname);
 
                 this.emit('uploading', this.eventObject);
 
                 return this.ftp
-                    .put(tmp, path.join(config.remoteRoot, relDir, fname))
+                    .put(tmp, upath.join(config.remoteRoot, relDir, fname))
                     .then(() => {
                         this.eventObject.transferredFileCount++;
                         this.emit('uploaded', this.eventObject);
@@ -116,7 +116,8 @@ const FtpDeployer = function () {
                 }
             })
             .catch(err => {
-                if (this.ftp) this.ftp.end();
+                // console.log(this.ftp.getConnectionStatus() != "disconnected");
+                if (this.ftp && this.ftp.getConnectionStatus() != "disconnected") this.ftp.end();
                 console.log("Failed", typeof cb);
                 if (typeof cb == "function") {
                     cb(err);

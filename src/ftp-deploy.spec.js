@@ -23,7 +23,7 @@ const config = {
     debugMode: true
 };
 
-describe("deploy", () => {
+describe("deploy tests", () => {
     const remoteDir = path.join(__dirname, "../test/remote/ftp");
 
     it("should fail if badly configured", () => {

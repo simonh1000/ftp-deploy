@@ -71,4 +71,3 @@ let exp = {
     'folderA/folderB': ['test-inside-b.txt'],
     'folderA/folderB/emptyC/folderD': ['test-inside-d-1.txt', 'test-inside-d-2.txt']
 };
-
