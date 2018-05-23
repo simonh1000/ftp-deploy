@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.0
+    - Add delete destination before commencing uploads
+
 ## 2.0.0
     - complete rewrite using promises
     - switch from jsftp to ftp-srv

@@ -2,6 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const util = require("util");
 const read = require("read");
+
+const Promise = require('bluebird');
 const readP = util.promisify(read);
 const minimatch = require("minimatch");
 
@@ -10,7 +12,7 @@ const minimatch = require("minimatch");
 function checkIncludes(config) {
     config.excludes = config.excludes || [];
     if (!config.include || !config.include.length) {
-        return Promise.reject({code: "NoIncludes", message: "You need to specify files to upload - e.g. ['*', '**/*']"});
+        return Promise.reject({ code: "NoIncludes", message: "You need to specify files to upload - e.g. ['*', '**/*']" });
     } else {
         return Promise.resolve(config)
     }
@@ -107,10 +109,34 @@ function countFiles(filemap) {
         .length
 }
 
+function deleteDir(ftp, dir) {
+    return ftp.list(dir)
+        .then(lst => {
+            console.log("Deleting directory:", dir);
+            let dirNames =
+                lst
+                    .filter(f => f.type == 'd')
+                    .map(f => path.join(dir, f.name));
+
+            let fnames =
+                lst
+                    .filter(f => f.type != 'd')
+                    .map(f => path.join(dir, f.name));
+
+            // delete sub-directories and then all files
+            return Promise.mapSeries(dirNames, dirName => {
+                // deletes everything in sub-directory, and then itself
+                return deleteDir(ftp, dirName).then(() => ftp.delete(dirName));
+            })
+                .then(() => Promise.mapSeries(fnames, fname => ftp.delete(fname)));
+        });
+}
+
 module.exports = {
     checkIncludes: checkIncludes,
     getPassword: getPassword,
     parseLocal: parseLocal,
     canIncludePath: canIncludePath,
-    countFiles: countFiles
+    countFiles: countFiles,
+    deleteDir: deleteDir
 };
