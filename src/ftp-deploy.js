@@ -85,7 +85,6 @@ const FtpDeployer = function () {
     this.checkLocalAndUpload = (config) => {
         let filemap = lib.parseLocal(config.include, config.exclude, config.localRoot, "/");
 
-        // console.log("filemap", filemap);
         this.eventObject['totalFilesCount'] = lib.countFiles(filemap);
 
         return this.makeAllAndUpload(config, filemap);
@@ -116,9 +115,7 @@ const FtpDeployer = function () {
                 }
             })
             .catch(err => {
-                // console.log(this.ftp.getConnectionStatus() != "disconnected");
                 if (this.ftp && this.ftp.getConnectionStatus() != "disconnected") this.ftp.end();
-                console.log("Failed", typeof cb);
                 if (typeof cb == "function") {
                     cb(err);
                 } else {

@@ -66,7 +66,6 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
         if (fs.lstatSync(currItem).isDirectory()) {
             // currItem is a directory. Recurse and attach to accumulator
             let tmp = parseLocal(includes, excludes, localRootDir, newRelDir);
-            // console.log("recurse into", newRelDir, tmp);
             for (let key in tmp) {
                 if (tmp[key].length == 0) {
                     delete tmp[key];
@@ -80,9 +79,6 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
                 // console.log("including", currItem);
                 acc[relDir].push(item);
                 return acc;
-            }
-            {
-                // console.log("excluding", currItem);
             }
         }
         return acc;
@@ -112,6 +108,7 @@ function countFiles(filemap) {
 function deleteDir(ftp, dir) {
     return ftp.list(dir)
         .then(lst => {
+            // FIXME move this to an event
             console.log("Deleting directory:", dir);
             let dirNames =
                 lst
