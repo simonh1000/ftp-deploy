@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.1
+    - AFix a bug for windows users
+
 ## 2.1.0
     - Add delete destination before commencing uploads
 
