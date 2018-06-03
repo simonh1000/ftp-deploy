@@ -32,7 +32,7 @@ const FtpDeployer = function () {
 
     this.makeAllAndUpload = function (remoteDir, filemap) {
         let keys = Object.keys(filemap);
-        return Promise.mapSeries(keys, key => {
+        return Promise.map(keys, key => {
             // console.log("Processing", key, filemap[key]);
             return this.makeAndUpload(remoteDir, key, filemap[key]);
         });
@@ -42,7 +42,7 @@ const FtpDeployer = function () {
     // Resolves a confirmation message on success
     this.makeAndUpload = (config, relDir, fnames) => {
         return this.ftp.mkdir(upath.join(config.remoteRoot, relDir), true).then(() => {
-            return Promise.mapSeries(fnames, fname => {
+            return Promise.map(fnames, fname => {
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
                 let tmp = fs.readFileSync(tmpFileName);
                 this.eventObject['filename'] = upath.join(relDir, fname);
