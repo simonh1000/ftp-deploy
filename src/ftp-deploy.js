@@ -53,8 +53,9 @@ const FtpDeployer = function () {
                     .put(tmp, upath.join(config.remoteRoot, relDir, fname))
                     .then(() => {
                         this.eventObject.transferredFileCount++;
+                        this.eventObject.filename = fname;
                         this.emit('uploaded', this.eventObject);
-                        return Promise.resolve("uploaded " + tmpFileName);
+                        return Promise.resolve("uploaded " + this.eventObject.filename);
                     })
                     .catch(err => {
                         this.eventObject["error"] = err;
