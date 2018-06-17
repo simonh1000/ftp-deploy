@@ -112,7 +112,7 @@ function deleteDir(ftp, dir) {
             console.log("Deleting directory:", dir);
             let dirNames =
                 lst
-                    .filter(f => f.type == 'd')
+                    .filter(f => f.type == 'd' && f.name != '..' && f.name != '.' )
                     .map(f => path.join(dir, f.name));
 
             let fnames =
@@ -120,12 +120,14 @@ function deleteDir(ftp, dir) {
                     .filter(f => f.type != 'd')
                     .map(f => path.join(dir, f.name));
 
+            // delete files
+            Promise.map(fnames, fname => {ftp.delete(fname);console.log('Deleting files' + fname)})
             // delete sub-directories and then all files
-            return Promise.mapSeries(dirNames, dirName => {
+            return Promise.map(dirNames, dirName => {
                 // deletes everything in sub-directory, and then itself
-                return deleteDir(ftp, dirName).then(() => ftp.delete(dirName));
+                return deleteDir(ftp, dirName).then(() => ftp.rmdir(dirName));
             })
-                .then(() => Promise.mapSeries(fnames, fname => ftp.delete(fname)));
+            
         });
 }
 
