@@ -76,8 +76,10 @@ const FtpDeployer = function() {
         this.ftp = new PromiseFtp();
 
         return this.ftp.connect(config).then(serverMessage => {
-            console.log("Connected to:", config.host);
-            console.log("Connected: Server message: " + serverMessage);
+        	if (config.verbose) {
+	            console.log("Connected to:", config.host);
+	            console.log("Connected: Server message: " + serverMessage);
+        	}
 
             return config;
         });

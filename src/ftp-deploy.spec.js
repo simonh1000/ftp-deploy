@@ -20,7 +20,8 @@ const config = {
     remoteRoot: "/ftp",
     exclude: [],
     include: ["folderA/**/*", 'test-inside-root.txt'],
-    debugMode: true
+    debugMode: true,
+    verbose: true
 };
 
 describe("deploy tests", () => {

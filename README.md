@@ -37,7 +37,8 @@ var config = {
 	// include: ['*', '**/*'],      // this would upload everything except dot files
 	include: ['*.php', 'dist/*'],
     exclude: ['dist/**/*.map'],     // e.g. exclude sourcemaps
-    deleteRemote: true                // delete existing files at destination before uploading
+    deleteRemote: true,             // delete existing files at destination before uploading
+    verbose: true                   // show log messages
 }
 
 // use with promises
