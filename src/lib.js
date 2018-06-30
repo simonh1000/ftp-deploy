@@ -108,17 +108,20 @@ function countFiles(filemap) {
         .length;
 }
 
-function deleteDir(ftp, dir) {
-    return ftp.list(dir).then(lst => {
+function deleteDir(ftp, config) {
+    return ftp.list(config.remoteRoot).then(lst => {
         // FIXME move this to an event
-        console.log("Deleting directory:", dir);
+        if (config.verbose) {
+            console.log("Deleting directory:", config.remoteRoot);
+        }
+        
         let dirNames = lst
             .filter(f => f.type == "d")
-            .map(f => path.join(dir, f.name));
+            .map(f => path.join(config.remoteRoot, f.name));
 
         let fnames = lst
             .filter(f => f.type != "d")
-            .map(f => path.join(dir, f.name));
+            .map(f => path.join(config.remoteRoot, f.name));
 
         // delete sub-directories and then all files
         return Promise.mapSeries(dirNames, dirName => {

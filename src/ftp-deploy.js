@@ -104,7 +104,7 @@ const FtpDeployer = function() {
     this.deleteRemote = config => {
         if (config.deleteRemote) {
             return lib
-                .deleteDir(this.ftp, config.remoteRoot)
+                .deleteDir(this.ftp, config)
                 .then(() => config);
         }
         return Promise.resolve(config);
