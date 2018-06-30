@@ -3,7 +3,7 @@ const path = require("path");
 const util = require("util");
 const read = require("read");
 
-const Promise = require('bluebird');
+const Promise = require("bluebird");
 const readP = util.promisify(read);
 const minimatch = require("minimatch");
 
@@ -12,15 +12,18 @@ const minimatch = require("minimatch");
 function checkIncludes(config) {
     config.excludes = config.excludes || [];
     if (!config.include || !config.include.length) {
-        return Promise.reject({ code: "NoIncludes", message: "You need to specify files to upload - e.g. ['*', '**/*']" });
+        return Promise.reject({
+            code: "NoIncludes",
+            message: "You need to specify files to upload - e.g. ['*', '**/*']"
+        });
     } else {
-        return Promise.resolve(config)
+        return Promise.resolve(config);
     }
 }
 
 function getPassword(config) {
     if (config.password) {
-        return Promise.resolve(config)
+        return Promise.resolve(config);
     } else {
         let options = {
             prompt:
@@ -32,24 +35,25 @@ function getPassword(config) {
             default: "",
             silent: true
         };
-        return readP(options)
-            .then(res => {
-                let config2 = Object.assign(config, { password: res });
-                return config2;
-            });
+        return readP(options).then(res => {
+            let config2 = Object.assign(config, { password: res });
+            return config2;
+        });
     }
 }
 
-// Analysing local firstory 
+// Analysing local firstory
 
 function canIncludePath(includes, excludes, filePath) {
-    let go = ((acc, item) => acc || minimatch(filePath, item, { matchBase: true }))
+    let go = (acc, item) =>
+        acc || minimatch(filePath, item, { matchBase: true });
     let canInclude = includes.reduce(go, false);
 
     // Now check whether the file should in fact be specifically excluded
     if (canInclude) {
         // if any excludes match return false
-        let go2 = ((acc, item) => acc && !minimatch(filePath, item, { matchBase: true }))
+        let go2 = (acc, item) =>
+            acc && !minimatch(filePath, item, { matchBase: true });
         canInclude = excludes.reduce(go2, true);
     }
     // console.log("canIncludePath", include, filePath, res);
@@ -59,7 +63,7 @@ function canIncludePath(includes, excludes, filePath) {
 // A method for parsing the source location and storing the information into a suitably formated object
 function parseLocal(includes, excludes, localRootDir, relDir) {
     // reducer
-    let handleItem = function (acc, item) {
+    let handleItem = function(acc, item) {
         const currItem = path.join(fullDir, item);
         const newRelDir = path.relative(localRootDir, currItem);
 
@@ -100,33 +104,28 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
 }
 
 function countFiles(filemap) {
-    return Object.values(filemap)
-        .reduce((acc, item) => acc.concat(item))
-        .length
+    return Object.values(filemap).reduce((acc, item) => acc.concat(item))
+        .length;
 }
 
 function deleteDir(ftp, dir) {
-    return ftp.list(dir)
-        .then(lst => {
-            // FIXME move this to an event
-            console.log("Deleting directory:", dir);
-            let dirNames =
-                lst
-                    .filter(f => f.type == 'd')
-                    .map(f => path.join(dir, f.name));
+    return ftp.list(dir).then(lst => {
+        // FIXME move this to an event
+        console.log("Deleting directory:", dir);
+        let dirNames = lst
+            .filter(f => f.type == "d")
+            .map(f => path.join(dir, f.name));
 
-            let fnames =
-                lst
-                    .filter(f => f.type != 'd')
-                    .map(f => path.join(dir, f.name));
+        let fnames = lst
+            .filter(f => f.type != "d")
+            .map(f => path.join(dir, f.name));
 
-            // delete sub-directories and then all files
-            return Promise.mapSeries(dirNames, dirName => {
-                // deletes everything in sub-directory, and then itself
-                return deleteDir(ftp, dirName).then(() => ftp.delete(dirName));
-            })
-                .then(() => Promise.mapSeries(fnames, fname => ftp.delete(fname)));
-        });
+        // delete sub-directories and then all files
+        return Promise.mapSeries(dirNames, dirName => {
+            // deletes everything in sub-directory, and then itself
+            return deleteDir(ftp, dirName).then(() => ftp.delete(dirName));
+        }).then(() => Promise.mapSeries(fnames, fname => ftp.delete(fname)));
+    });
 }
 
 module.exports = {
