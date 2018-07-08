@@ -85,9 +85,14 @@ ftpDeploy.on('upload-error', function (data) {
 
 A script to run a simple ftp server (using [ftp-srv](https://github.com/trs/ftp-srv)) is included, together with a test directory.
 
-
+To use open a console to run the ftp server:
 ```
 npm run test_server
+```
+
+and then in another console run the tests:
+
+```
 npm test
 ```
 

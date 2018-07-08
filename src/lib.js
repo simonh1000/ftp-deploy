@@ -113,7 +113,7 @@ function deleteDir(ftp, dir) {
         // FIXME move this to an event
         console.log("Deleting directory:", dir);
         let dirNames = lst
-            .filter(f => f.type == "d")
+            .filter(f => f.type == "d" && f.name != ".." && f.name != ".")
             .map(f => path.join(dir, f.name));
 
         let fnames = lst
