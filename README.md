@@ -2,7 +2,7 @@
 
 A Node.js package to help with deploying code. Ftp a folder from your local disk to a remote ftp destination. Does not delete from destination directory.
 
-Version 2.0.0 is an almost complete re-write to use promises and [ftp-srv](https://github.com/trs/ftp-srv) instead of jsftp. The one breaking change is listed in the Usage section.
+Version 2.0.0 is an almost complete re-write to use promises and [promise-ftp](https://github.com/realtymaps/promise-ftp) instead of jsftp. The one breaking change is listed in the Usage section.
 
 ## Installation
 
@@ -37,7 +37,7 @@ var config = {
 	// include: ['*', '**/*'],      // this would upload everything except dot files
 	include: ['*.php', 'dist/*'],
     exclude: ['dist/**/*.map'],     // e.g. exclude sourcemaps
-    deleteRemote: true                // delete existing files at destination before uploading
+    deleteRemote: true              // delete existing files at destination before uploading
 }
 
 // use with promises
@@ -83,7 +83,13 @@ ftpDeploy.on('upload-error', function (data) {
 ```
 ## Testing 
 
-A script to run a simple ftp server is included at `npm run test_server` and this is needed to run the main tests as `npm test`.
+A script to run a simple ftp server (using [ftp-srv](https://github.com/trs/ftp-srv)) is included, together with a test directory.
+
+
+```
+npm run test_server
+npm test
+```
 
 ## ToDo
  
