@@ -1,12 +1,21 @@
 {
-    "name": "ftp-deploy",
-    "version": "2.1.2",
+    "name": "my-ftp-deploy",
+    "version": "1.0.0",
     "author": "Simon Hampton",
     "description": "Ftp a folder from your local disk to an ftp destination. Does not delete from destination directory. Derived from grunt-ftp-deploy",
     "main": "src/ftp-deploy",
     "scripts": {
         "test": "mocha **/**.spec.js",
-        "test_server": "node test/server.js"
+        "test_server": "node test/server.js",
+        "commit": "git cz",
+        "commitmsg": "validate-commit-msg",
+        "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
+    },
+    "husky": {
+      "hooks": {
+        "pre-commit": "npm run commitmsg",
+        "pre-push": "npm run commitmsg"
+      }
     },
     "dependencies": {
         "bluebird": "^3.5.1",
@@ -16,10 +25,13 @@
         "upath": "^1.0.5"
     },
     "devDependencies": {
-        "delete": "^1.1.0",
         "chai": "^4.1.2",
+        "cz-conventional-changelog": "^2.1.0",
+        "delete": "^1.1.0",
         "ftp-srv": "^2.16.1",
-        "mocha": "^4.1.0"
+        "husky": "^1.0.0-rc.13",
+        "mocha": "^4.1.0",
+        "validate-commit-msg": "^2.14.0"
     },
     "keywords": [
         "ftp",
@@ -47,9 +59,18 @@
         {
             "name": "keyle",
             "url": "https://github.com/keyle"
+        },
+        {
+            "name": "pq1949",
+            "url": "https://github.com/pq1949"
         }
     ],
     "prettier": {
         "tabWidth": 4
+    },
+    "config": {
+        "commitizen": {
+            "path": "./node_modules/cz-conventional-changelog"
+        }
     }
 }

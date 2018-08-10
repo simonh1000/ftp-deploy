@@ -1,5 +1,3 @@
-# Changelog
-
 ## 2.1.1
     - AFix a bug for windows users
 
@@ -41,7 +39,7 @@
 
     - upgraded jsftp from 0.6.x to 1.2.x
     - Added ```stopOnError``` to configuration.
-    - added ```error``` event. 
+    - added ```error``` event.
     - deprecated paralleluploads config setting (no longer supported by jsftp)
 
 ## 0.4.0
