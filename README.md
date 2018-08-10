@@ -1,3 +1,5 @@
+> Forked from  [ftp-deploy](https://github.com/simonh1000/ftp-deploy), fixed issue #67.
+
 # ftp-deploy
 
 A Node.js package to help with deploying code. Ftp a folder from your local disk to a remote ftp destination. Does not delete from destination directory.
@@ -28,7 +30,7 @@ var FtpDeploy = require('ftp-deploy');
 var ftpDeploy = new FtpDeploy();
 
 var config = {
-	user: "user",                   // NOTE that this was username in 1.x 
+	user: "user",                   // NOTE that this was username in 1.x
     password: "password",           // optional, prompted if none given
 	host: "ftp.someserver.com",
 	port: 21,
@@ -44,7 +46,7 @@ var config = {
 ftpDeploy.deploy(config)
 	.then(res => console.log('finished'))
 	.catch(err => console.log(err))
-	
+
 // use with callback
 ftpDeploy.deploy(config, function(err) {
 	if (err) console.log(err)
@@ -74,14 +76,14 @@ ftpDeploy.on('uploaded', function(data) {
 });
 ```
 
-To continue uploading files even if a file upload fails (not implemented at present): 
+To continue uploading files even if a file upload fails (not implemented at present):
 
 ```js
 ftpDeploy.on('upload-error', function (data) {
 	console.log(data.err); // data will also include filename, relativePath, and other goodies
 });
 ```
-## Testing 
+## Testing
 
 A script to run a simple ftp server (using [ftp-srv](https://github.com/trs/ftp-srv)) is included, together with a test directory.
 
@@ -97,5 +99,5 @@ npm test
 ```
 
 ## ToDo
- 
+
 re-enable continueOnError
