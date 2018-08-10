@@ -6,7 +6,8 @@
     "main": "src/ftp-deploy",
     "scripts": {
         "test": "mocha **/**.spec.js",
-        "test_server": "node test/server.js"
+        "test_server": "node test/server.js",
+        "commitmsg": "validate-commit-msg"
     },
     "dependencies": {
         "bluebird": "^3.5.1",
@@ -16,10 +17,12 @@
         "upath": "^1.0.5"
     },
     "devDependencies": {
-        "delete": "^1.1.0",
         "chai": "^4.1.2",
+        "cz-conventional-changelog": "^2.1.0",
+        "delete": "^1.1.0",
         "ftp-srv": "^2.16.1",
-        "mocha": "^4.1.0"
+        "mocha": "^4.1.0",
+        "validate-commit-msg": "^2.14.0"
     },
     "keywords": [
         "ftp",
@@ -49,11 +52,16 @@
             "url": "https://github.com/keyle"
         },
         {
-          "name": "pq1949",
-          "url": "https://github.com/pq1949"
+            "name": "pq1949",
+            "url": "https://github.com/pq1949"
         }
     ],
     "prettier": {
         "tabWidth": 4
+    },
+    "config": {
+        "commitizen": {
+            "path": "./node_modules/cz-conventional-changelog"
+        }
     }
 }
