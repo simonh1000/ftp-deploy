@@ -7,7 +7,15 @@
     "scripts": {
         "test": "mocha **/**.spec.js",
         "test_server": "node test/server.js",
-        "commitmsg": "validate-commit-msg"
+        "commit": "git cz",
+        "commitmsg": "validate-commit-msg",
+        "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s"
+    },
+    "husky": {
+      "hooks": {
+        "pre-commit": "npm run commitmsg",
+        "pre-push": "npm run commitmsg"
+      }
     },
     "dependencies": {
         "bluebird": "^3.5.1",
@@ -21,6 +29,7 @@
         "cz-conventional-changelog": "^2.1.0",
         "delete": "^1.1.0",
         "ftp-srv": "^2.16.1",
+        "husky": "^1.0.0-rc.13",
         "mocha": "^4.1.0",
         "validate-commit-msg": "^2.14.0"
     },
