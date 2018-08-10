@@ -1,4 +1,4 @@
-> Forked from  [ftp-deploy](https://github.com/simonh1000/ftp-deploy), fixed issue [#67](https://github.com/simonh1000/ftp-deploy/issues/67)
+> Fork from  [ftp-deploy](https://github.com/simonh1000/ftp-deploy), fix issue [#67](https://github.com/simonh1000/ftp-deploy/issues/67)
 
 # ftp-deploy
 
