@@ -36,7 +36,7 @@ var config = {
 	remoteRoot: '/public_html/remote-folder/',
 	// include: ['*', '**/*'],      // this would upload everything except dot files
 	include: ['*.php', 'dist/*'],
-    exclude: ['dist/**/*.map'],     // e.g. exclude sourcemaps
+    exclude: ['dist/**/*.map'],     // e.g. exclude sourcemaps - ** exclude: [] if nothing to exclude **
     deleteRemote: true              // delete existing files at destination before uploading
 }
 
