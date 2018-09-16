@@ -32,7 +32,7 @@ const FtpDeployer = function() {
     this.makeAllAndUpload = function(remoteDir, filemap) {
         let keys = Object.keys(filemap);
         return Promise.mapSeries(keys, key => {
-            // console.log("Processing", key, filemap[key]);
+            console.log("Processing", key, filemap[key]);
             return this.makeAndUpload(remoteDir, key, filemap[key]);
         });
     };
@@ -40,9 +40,11 @@ const FtpDeployer = function() {
     // Creates a remote directory and uploads all of the files in it
     // Resolves a confirmation message on success
     this.makeAndUpload = (config, relDir, fnames) => {
+        let newDirectory = upath.join(config.remoteRoot, relDir);
         return this.ftp
-            .mkdir(upath.join(config.remoteRoot, relDir), true)
+            .mkdir(newDirectory, true)
             .then(() => {
+                console.log("newDirectory", newDirectory);
                 return Promise.mapSeries(fnames, fname => {
                     let tmpFileName = upath.join(
                         config.localRoot,
@@ -91,6 +93,7 @@ const FtpDeployer = function() {
             config.localRoot,
             "/"
         );
+        console.log(filemap);
 
         this.eventObject["totalFilesCount"] = lib.countFiles(filemap);
 
@@ -114,7 +117,7 @@ const FtpDeployer = function() {
             .then(lib.getPassword)
             .then(this.connect)
             .then(this.deleteRemote)
-            .then(config => this.checkLocalAndUpload(config))
+            .then(this.checkLocalAndUpload)
             .then(() => {
                 this.ftp.end();
                 if (typeof cb == "function") {

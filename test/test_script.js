@@ -8,13 +8,13 @@ const config = {
     password: "anon", // Optional, prompted if none given
     host: "localhost",
     port: 2121,
-    localRoot: path.join(__dirname, "./local"),
+    localRoot: path.join(__dirname, "./simple"),
     remoteRoot: "/ftp",
     deleteRemote: true,
     exclude: [],
-    include: ["*", ".*", "folderA/**/*", 'test-inside-root.txt']
+    // include: ["*", ".*", "folderA/**/*", 'test-inside-root.txt']
     // include: ["**/*", "*", ".*"]
-    // include: ["nothing"]
+    include: ["*"]
 };
 
 const ftpDeploy = new FtpDeploy();
