@@ -52,9 +52,11 @@ function canIncludePath(includes, excludes, filePath) {
     // Now check whether the file should in fact be specifically excluded
     if (canInclude) {
         // if any excludes match return false
-        let go2 = (acc, item) =>
-            acc && !minimatch(filePath, item, { matchBase: true });
-        canInclude = excludes.reduce(go2, true);
+        if (excludes) {
+            let go2 = (acc, item) =>
+                acc && !minimatch(filePath, item, { matchBase: true });
+            canInclude = excludes.reduce(go2, true);
+        }
     }
     // console.log("canIncludePath", include, filePath, res);
     return canInclude;
@@ -63,7 +65,7 @@ function canIncludePath(includes, excludes, filePath) {
 // A method for parsing the source location and storing the information into a suitably formated object
 function parseLocal(includes, excludes, localRootDir, relDir) {
     // reducer
-    let handleItem = function(acc, item) {
+    let handleItem = function (acc, item) {
         const currItem = path.join(fullDir, item);
         const newRelDir = path.relative(localRootDir, currItem);
 
@@ -123,7 +125,7 @@ function deleteDir(ftp, dir) {
         // delete sub-directories and then all files
         return Promise.mapSeries(dirNames, dirName => {
             // deletes everything in sub-directory, and then itself
-            return deleteDir(ftp, dirName).then(() => ftp.delete(dirName));
+            return deleteDir(ftp, dirName).then(() => ftp.rmdir(dirName));
         }).then(() => Promise.mapSeries(fnames, fname => ftp.delete(fname)));
     });
 }

@@ -23,6 +23,8 @@ I create a file - e.g. deploy.js - in the root of my source code and add a scrip
 The most basic usage (stops uploading when an error occurs):
 **Note:** that in version 2 the config file expects a field of `user` rather than `username` in 1.x.
 
+The config file is passed as-is to Promise-FTP.
+
 ```js
 var FtpDeploy = require('ftp-deploy');
 var ftpDeploy = new FtpDeploy();
@@ -36,8 +38,9 @@ var config = {
 	remoteRoot: '/public_html/remote-folder/',
 	// include: ['*', '**/*'],      // this would upload everything except dot files
 	include: ['*.php', 'dist/*'],
-    exclude: ['dist/**/*.map'],     // e.g. exclude sourcemaps
-    deleteRemote: true              // delete existing files at destination before uploading
+    exclude: ['dist/**/*.map'],     // e.g. exclude sourcemaps - ** exclude: [] if nothing to exclude **
+    deleteRemote: true,              // delete existing files at destination before uploading
+    forcePasv: true                 // Passive mode is forced (EPSV command is not sent)
 }
 
 // use with promises
