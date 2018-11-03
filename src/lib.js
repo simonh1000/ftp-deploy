@@ -116,11 +116,11 @@ function deleteDir(ftp, dir) {
         console.log("Deleting directory:", dir);
         let dirNames = lst
             .filter(f => f.type == "d" && f.name != ".." && f.name != ".")
-            .map(f => path.join(dir, f.name));
+            .map(f => path.posix.join(dir, f.name));
 
         let fnames = lst
             .filter(f => f.type != "d")
-            .map(f => path.join(dir, f.name));
+            .map(f => path.posix.join(dir, f.name));
 
         // delete sub-directories and then all files
         return Promise.mapSeries(dirNames, dirName => {
