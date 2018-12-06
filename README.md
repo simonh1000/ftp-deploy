@@ -75,6 +75,9 @@ ftpDeploy.on('uploading', function(data) {
 ftpDeploy.on('uploaded', function(data) {
 	console.log(data);         // same data as uploading event
 });
+ftpDeploy.on('log', function(data) {
+	console.log(data);         // same data as uploading event
+});
 ```
 
 To continue uploading files even if a file upload fails (not implemented at present): 
@@ -99,6 +102,11 @@ and then in another console run the tests:
 npm test
 ```
 
+## Changelog 
+
+ - 2.2.0 - remove console logs in favour of 'log' events
+
 ## ToDo
  
 re-enable continueOnError
+Move uploading and uploaded events to log

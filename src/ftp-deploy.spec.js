@@ -66,7 +66,8 @@ describe("deploy tests", () => {
             .then(() => {
                 // Should reject if file does not exist
                 return statP(remoteDir + "/test-inside-root.txt");
-            });
+            })
+            .catch(err => done(err));
     });
     it("should put a dot file", () => {
         const d = new FtpDeploy();

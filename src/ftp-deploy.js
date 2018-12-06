@@ -76,8 +76,8 @@ const FtpDeployer = function() {
         this.ftp = new PromiseFtp();
 
         return this.ftp.connect(config).then(serverMessage => {
-            console.log("Connected to:", config.host);
-            console.log("Connected: Server message: " + serverMessage);
+            this.emit("log", "Connected to: " + config.host);
+            this.emit("log", "Connected: Server message: " + serverMessage);
 
             return config;
         });
@@ -101,6 +101,7 @@ const FtpDeployer = function() {
     // Returns config
     this.deleteRemote = config => {
         if (config.deleteRemote) {
+            this.emit("log", "Deleting directory: " + config.remoteRoot);
             return lib
                 .deleteDir(this.ftp, config.remoteRoot)
                 .then(() => config);
