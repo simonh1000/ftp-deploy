@@ -25,7 +25,7 @@ const FtpDeployer = function() {
     this.ftp = null;
     this.eventObject = {
         totalFilesCount: 0,
-        transferredFileCount: 1,
+        transferredFileCount: 0,
         filename: ""
     };
 

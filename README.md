@@ -102,10 +102,6 @@ and then in another console run the tests:
 npm test
 ```
 
-## Changelog 
-
- - 2.2.0 - remove console logs in favour of 'log' events
-
 ## ToDo
  
 re-enable continueOnError
