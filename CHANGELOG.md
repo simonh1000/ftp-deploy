@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.1
+    - Bugfix: transfered file count
+    
+## 2.2.0
+    - remove console logs in favour of 'log' events
+
 ## 2.1.1
     - AFix a bug for windows users
 

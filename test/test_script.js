@@ -12,17 +12,19 @@ const config = {
     remoteRoot: "/ftp",
     deleteRemote: true,
     exclude: [],
-    // include: ["*", ".*", "folderA/**/*", 'test-inside-root.txt']
+    include: ["test-inside-root.txt"]
     // include: ["**/*", "*", ".*"]
-    include: ["*"]
 };
 
 const ftpDeploy = new FtpDeploy();
 
 // use with promises
-ftpDeploy.deploy(config)
-    .then(res => console.log('finished'))
-    .catch(err => console.log(err))
+ftpDeploy
+    .deploy(config)
+    .then(res => console.log("finished"))
+    .catch(err => console.log(err));
 
-// ftpDeploy.on('uploading', data => console.log('uploading', data));
-ftpDeploy.on('uploading', data => console.log('uploaded', data));
+ftpDeploy.on("log", data => console.log("[log]", data));
+ftpDeploy.on("uploading", data => console.log("[uploading]", data));
+ftpDeploy.on("uploaded", data => console.log("[uploaded]", data));
+ftpDeploy.on("upload-error", data => console.log("[upload-error]", data));
