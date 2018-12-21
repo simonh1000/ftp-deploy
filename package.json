@@ -1,12 +1,12 @@
 {
     "name": "ftp-deploy",
-    "version": "2.2.1",
+    "version": "2.3.0",
     "author": "Simon Hampton",
-    "description": "Ftp a folder from your local disk to an ftp destination. Does not delete from destination directory. Derived from grunt-ftp-deploy",
+    "description": "Ftp a folder from your local disk to an ftp destination",
     "main": "src/ftp-deploy",
     "scripts": {
         "test": "mocha **/**.spec.js",
-        "test_server": "node test/server.js"
+        "server": "node test/server.js"
     },
     "dependencies": {
         "bluebird": "^3.5.1",

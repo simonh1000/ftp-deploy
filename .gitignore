@@ -1,8 +1,7 @@
 node_modules/
-.DS_Store
-.zedstate
+ignore
 .vscode
 test/remote
-proftpd.conf
+
+.DS_Store
 notes.md
-ignore
