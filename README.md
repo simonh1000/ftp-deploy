@@ -30,16 +30,16 @@ var FtpDeploy = require('ftp-deploy');
 var ftpDeploy = new FtpDeploy();
 
 var config = {
-	user: "user",                   // NOTE that this was username in 1.x 
+    user: "user",                   // NOTE that this was username in 1.x 
     password: "password",           // optional, prompted if none given
-	host: "ftp.someserver.com",
-	port: 21,
-	localRoot: __dirname + '/local-folder',
-	remoteRoot: '/public_html/remote-folder/',
-	// include: ['*', '**/*'],      // this would upload everything except dot files
-	include: ['*.php', 'dist/*'],
+    host: "ftp.someserver.com",
+    port: 21,
+    localRoot: __dirname + '/local-folder',
+    remoteRoot: '/public_html/remote-folder/',
+    // include: ['*', '**/*'],      // this would upload everything except dot files
+    include: ['*.php', 'dist/*'],
     exclude: ['dist/**/*.map'],     // e.g. exclude sourcemaps - ** exclude: [] if nothing to exclude **
-    deleteRemote: false,              // delete ALL existing files at destination before uploading, if true
+    deleteRemote: ['/cache/*'],     // e.g. delete everything in the cache directory - ** deleteRemote: false or [] to not delete anything **
     forcePasv: true                 // Passive mode is forced (EPSV command is not sent)
 }
 
