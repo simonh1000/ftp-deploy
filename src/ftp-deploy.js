@@ -19,7 +19,7 @@ const lib = require("./lib");
 }
 */
 
-const FtpDeployer = function() {
+const FtpDeployer = function () {
     // The constructor for the super class.
     events.EventEmitter.call(this);
     this.ftp = null;
@@ -29,7 +29,7 @@ const FtpDeployer = function() {
         filename: ""
     };
 
-    this.makeAllAndUpload = function(remoteDir, filemap) {
+    this.makeAllAndUpload = function (remoteDir, filemap) {
         let keys = Object.keys(filemap);
         return Promise.mapSeries(keys, key => {
             // console.log("Processing", key, filemap[key]);
@@ -100,19 +100,23 @@ const FtpDeployer = function() {
         return this.makeAllAndUpload(config, filemap);
     };
 
-    // Deletes remote directory if requested by config
+    // Deletes remote directories if requested by config
     // Returns config
     this.deleteRemote = config => {
         if (config.deleteRemote) {
-            this.emit("log", "Deleting directory: " + config.remoteRoot);
-            return lib
-                .deleteDir(this.ftp, config.remoteRoot)
-                .then(() => config);
+            if (!Array.isArray(config.deleteRemote)) {
+                throw new Error('deleteRemote must be an array');
+            }
+
+            return Promise.mapSeries(config.deleteRemote, dir => {
+                this.emit("log", "Deleting directory: " + config.remoteRoot + dir);
+                return lib.deleteDir(this.ftp, config.remoteRoot + dir);
+            }).then(() => config);
         }
         return Promise.resolve(config);
     };
 
-    this.deploy = function(config, cb) {
+    this.deploy = function (config, cb) {
         return lib
             .checkIncludes(config)
             .then(lib.getPassword)
