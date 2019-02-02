@@ -135,8 +135,8 @@ mkDirExists = (ftp, dir) => {
             if (err.message.startsWith("EEXIST")) {
                 return Promise.resolve()
             } else {
-                console.log(Object.getOwnPropertyNames(err));
-                console.log(err.message);
+                console.log('[mkDirExists]', err.message);
+                // console.log(Object.getOwnPropertyNames(err));
                 return Promise.reject(err);
             }
         });

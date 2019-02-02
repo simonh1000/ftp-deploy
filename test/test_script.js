@@ -8,7 +8,7 @@ const config = {
     password: "anon", // Optional, prompted if none given
     host: "localhost",
     port: 2121,
-    localRoot: path.join(__dirname),
+    localRoot: path.join(__dirname, "simple"),
     remoteRoot: "/",
     deleteRemote: true,
     exclude: [],
@@ -22,7 +22,7 @@ const ftpDeploy = new FtpDeploy();
 ftpDeploy
     .deploy(config)
     .then(res => console.log("finished: ", res))
-    .catch(err => console.log(err));
+    .catch(err => console.log("err", err));
 
 ftpDeploy.on("log", data => console.log("[log]", data));
 ftpDeploy.on("uploading", data => console.log("[uploading]", data));
