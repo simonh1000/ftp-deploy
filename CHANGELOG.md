@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.3.1
+    - Fix a bug some experienced uploaded to "/"
+    
 ## 2.3.0
     - Return result of process at end of run
 

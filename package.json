@@ -1,6 +1,6 @@
 {
     "name": "ftp-deploy",
-    "version": "2.3.0",
+    "version": "2.3.1",
     "author": "Simon Hampton",
     "description": "Ftp a folder from your local disk to an ftp destination",
     "main": "src/ftp-deploy",
