@@ -37,12 +37,19 @@ const FtpDeployer = function() {
         });
     };
 
+    this.makeDir = function(newDirectory) {
+        if (newDirectory === "/") {
+            console.log("********Avoiding creating / directory");
+            return Promise.resolve("unused")
+        } else {
+            return this.ftp.mkdir(newDirectory, true)
+        }
+    }
     // Creates a remote directory and uploads all of the files in it
     // Resolves a confirmation message on success
     this.makeAndUpload = (config, relDir, fnames) => {
         let newDirectory = upath.join(config.remoteRoot, relDir);
-        return this.ftp
-            .mkdir(newDirectory, true)
+        return this.makeDir(newDirectory, true)
             .then(() => {
                 // console.log("newDirectory", newDirectory);
                 return Promise.mapSeries(fnames, fname => {
@@ -87,17 +94,21 @@ const FtpDeployer = function() {
 
     // creates list of all files to upload and starts upload process
     this.checkLocalAndUpload = config => {
-        let filemap = lib.parseLocal(
-            config.include,
-            config.exclude,
-            config.localRoot,
-            "/"
-        );
-        // console.log(filemap);
-
-        this.eventObject["totalFilesCount"] = lib.countFiles(filemap);
-
-        return this.makeAllAndUpload(config, filemap);
+        try {
+            let filemap = lib.parseLocal(
+                config.include,
+                config.exclude,
+                config.localRoot,
+                "/"
+            );
+            // console.log(filemap);
+            this.emit("log", "Files found to upload: " + JSON.stringify(filemap));
+            this.eventObject["totalFilesCount"] = lib.countFiles(filemap);
+    
+            return this.makeAllAndUpload(config, filemap);
+        } catch (e) {
+            return Promise.reject(e);
+        }
     };
 
     // Deletes remote directory if requested by config

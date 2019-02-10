@@ -93,7 +93,7 @@ A script to run a simple ftp server (using [ftp-srv](https://github.com/trs/ftp-
 
 To use open a console to run the ftp server:
 ```
-npm run test_server
+npm run server
 ```
 
 and then in another console run the tests:
