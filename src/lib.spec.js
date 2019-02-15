@@ -66,6 +66,11 @@ describe('dirParseSync', () => {
         let exp2 = Object.assign(exp, { "folderA/folderB/FolderC": ["test-inside-c.txt"] });
         assert.deepEqual(lib.parseLocal(['*'], ['.excludeme/**/*'], rootDir, '/'), exp2);
     });
+    it('should be able to exclude node_modules', () => {
+        const rootDir = path.join(__dirname, '../test/test2');
+        let exp = {'/': ['includeme.txt']};
+        assert.deepEqual(lib.parseLocal(['*'], ['node_modules/**'], rootDir, '/'), exp);
+    });
 });
 
 let exp = {
