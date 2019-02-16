@@ -36,9 +36,8 @@ var config = {
 	port: 21,
 	localRoot: __dirname + '/local-folder',
 	remoteRoot: '/public_html/remote-folder/',
-	// include: ['*', '**/*'],      // this would upload everything except dot files
 	include: ['*.php', 'dist/*'],
-    exclude: ['dist/**/*.map'],     // e.g. exclude sourcemaps - ** exclude: [] if nothing to exclude **
+    exclude: ['dist/**/*.map'],
     deleteRemote: false,              // delete ALL existing files at destination before uploading, if true
     forcePasv: true                 // Passive mode is forced (EPSV command is not sent)
 }
@@ -57,10 +56,10 @@ ftpDeploy.deploy(config, function(err, res) {
 
 ## Configuration
 
-You need to list all file patterns that you want to include for uploading, and the exclude option enables exceptions to the rule
+The exclude / include options take lists of globs - see https://github.com/isaacs/minimatch for examples. A file is uploaded if it matches an include, and does not match any of the excludes. For example:
 
- * `include`: all files that match will be uploaded. **Note** that a `[ ]` matches nothing
- * `exclude`: if a file matches the include pattern a subset may nonetheless be excluded
+ - `{ include: ['*'], exclude: [] }` matches everything in the first level of directory
+ - `{ include: ['*', '**/*'], exclude: ['node_modules/**'] }` matches everything (escept dot files) but excludes one directory
 
 ## Events
 
