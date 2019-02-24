@@ -122,8 +122,8 @@ const FtpDeployer = function() {
                 .catch(err => {
                     this.emit(
                         "log",
-                        "Deleting failed, trying to continue",
-                        err.code
+                        "Deleting failed, trying to continue: " +
+                        JSON.stringify(err)
                     );
                     return Promise.resolve(config);
                 });
