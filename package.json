@@ -1,6 +1,6 @@
 {
     "name": "ftp-deploy",
-    "version": "2.3.1",
+    "version": "2.3.2",
     "author": "Simon Hampton",
     "description": "Ftp a folder from your local disk to an ftp destination",
     "main": "src/ftp-deploy",
@@ -34,7 +34,7 @@
         "url": "https://github.com/simonh1000/ftp-deploy/issues"
     },
     "engines": {
-        "node": ">=6"
+        "node": ">=8"
     },
     "contributors": [
         {
