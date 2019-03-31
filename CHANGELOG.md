@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.3.2
+    - If delete does not work, try to continue anyway
+    
 ## 2.3.1
     - Fix a bug some experienced uploaded to "/"
     

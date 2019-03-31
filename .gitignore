@@ -3,6 +3,8 @@ ignore
 .vscode
 test/remote
 
+playground/**/*
+!playground/*.js
 .DS_Store
 notes.md
 playground

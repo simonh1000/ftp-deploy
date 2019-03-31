@@ -8,8 +8,8 @@ const config = {
     password: "anon", // Optional, prompted if none given
     host: "localhost",
     port: 2121,
-    localRoot: path.join(__dirname, "simple"),
-    remoteRoot: "/",
+    localRoot: path.join(__dirname, "local"),
+    remoteRoot: "/f",
     deleteRemote: true,
     exclude: [],
     include: ["test-inside-root.txt"]
