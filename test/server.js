@@ -2,8 +2,7 @@
 
 // Using non-standard port
 const port = 2121;
-const homeDir =
-    require("os").homedir() + "/code/nodejs/ftp-deploy/playground/remote";
+const homeDir = require("os").homedir() + "/code/nodejs/ftp-deploy/test/remote";
 
 const FtpSrv = require("ftp-srv");
 
@@ -22,21 +21,21 @@ ftpServer.on("login", (data, resolve, reject) => {
     resolve({ root: homeDir });
 });
 
-ftpServer.on('client-error', ({ connection, context, error }) => {
+ftpServer.on("client-error", ({ connection, context, error }) => {
     console.log("**client-error**");
     console.log(context);
     console.log(error);
 });
 
-ftpServer.on('error', (err) => {
+ftpServer.on("error", err => {
     console.log("**error**");
     console.log(err);
 });
 
-ftpServer.on('uncaughtException', (err) => {
+ftpServer.on("uncaughtException", err => {
     console.log("**uncaughtException**");
     console.log(err);
-})
+});
 
 ftpServer
     .listen()
