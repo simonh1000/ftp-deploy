@@ -78,6 +78,18 @@ describe("dirParseSync", () => {
             { "/": [] }
         );
     });
+    it("should exclude dot files/dirs", () => {
+        const rootDir = path.join(__dirname, "../test/test2");
+        assert.deepEqual(
+            lib.parseLocal(
+                ["*", "*/**"],
+                ["n_modules/**/*", "n_modules/**/.*"],
+                rootDir,
+                "/"
+            ),
+            { "/": [],  src: [ 'index.js' ] }
+        );
+    });
     it("should traverse test directory", () => {
         const rootDir = path.join(__dirname, "../test/local");
         let exp2 = Object.assign(exp, {
