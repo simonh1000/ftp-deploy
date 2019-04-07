@@ -19,7 +19,7 @@ const config = {
     localRoot: path.join(__dirname, "../test/local"),
     remoteRoot: "/ftp",
     exclude: [],
-    include: ["folderA/**/*", 'test-inside-root.txt'],
+    include: ["folderA/**/*", "test-inside-root.txt"],
     debugMode: true
 };
 
@@ -28,17 +28,17 @@ describe("deploy tests", () => {
 
     it("should fail if badly configured", () => {
         const d = new FtpDeploy();
-        const configError = Object.assign({}, config, {port: 212});
+        const configError = Object.assign({}, config, { port: 212 });
         return del(remoteDir)
             .then(() => {
                 return d.deploy(configError);
             })
             .catch(err => {
                 // Should reject if file does not exist
-                if (err.code === 'ECONNREFUSED') {
-                    return Promise.resolve("got expected error")
+                if (err.code === "ECONNREFUSED") {
+                    return Promise.resolve("got expected error");
                 } else {
-                    return Promise.reject(err)
+                    return Promise.reject(err);
                 }
             });
     });
@@ -46,16 +46,16 @@ describe("deploy tests", () => {
         const d = new FtpDeploy();
         return del(remoteDir)
             .then(() => {
-                let c2 = Object.assign({}, config, {include: []});
+                let c2 = Object.assign({}, config, { include: [] });
                 return d.deploy(c2);
             })
             .catch(err => {
-                if (err.code === 'NoIncludes') {
-                    return Promise.resolve("got expected error")
+                if (err.code === "NoIncludes") {
+                    return Promise.resolve("got expected error");
                 } else {
-                    return Promise.reject(err)
+                    return Promise.reject(err);
                 }
-        });
+            });
     });
     it("should put a file", () => {
         const d = new FtpDeploy();
@@ -73,7 +73,7 @@ describe("deploy tests", () => {
         const d = new FtpDeploy();
         return del(remoteDir)
             .then(() => {
-                config.include = ['.*'];
+                config.include = [".*"];
                 return d.deploy(config);
             })
             .then(() => {
