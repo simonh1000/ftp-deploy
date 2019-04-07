@@ -39,7 +39,6 @@ const FtpDeployer = function() {
 
     this.makeDir = function(newDirectory) {
         if (newDirectory === "/") {
-            console.log("********Avoiding creating / directory");
             return Promise.resolve("unused");
         } else {
             return this.ftp.mkdir(newDirectory, true);
@@ -123,7 +122,7 @@ const FtpDeployer = function() {
                     this.emit(
                         "log",
                         "Deleting failed, trying to continue: " +
-                        JSON.stringify(err)
+                            JSON.stringify(err)
                     );
                     return Promise.resolve(config);
                 });
