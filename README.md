@@ -2,7 +2,7 @@
 
 A Node.js package to help with deploying code. Ftp a folder from your local disk to a remote ftp destination. Does not delete from destination directory.
 
-Version 2.0.0 is an almost complete re-write to use promises and [promise-ftp](https://github.com/realtymaps/promise-ftp) instead of jsftp. The one breaking change is listed in the Usage section.
+Version 2.0.0 is an almost complete re-write to use promises and [promise-ftp](https://github.com/realtymaps/promise-ftp) instead of jsftp. The one breaking change is listed in the notes of Usage section.
 
 ## Installation
 
@@ -12,19 +12,7 @@ npm install --save-dev ftp-deploy
 
 ## Usage
 
-I create a file - e.g. deploy.js - in the root of my source code and add a script to its package.json so that I can `npm run deploy`.
-
-```json
-"scripts": {
-    "deploy": "node deploy"
-},
-```
-
-The most basic usage (stops uploading when an error occurs):
-**Note:** that in version 2 the config file expects a field of `user` rather than `username` in 1.x.
-
-The config file is passed as-is to Promise-FTP.
-
+The most basic usage:
 ```js
 var FtpDeploy = require("ftp-deploy");
 var ftpDeploy = new FtpDeploy();
@@ -56,16 +44,27 @@ ftpDeploy.deploy(config, function(err, res) {
 });
 ```
 
-## Configuration
+**Note:** 
+ - in version 2 the config file expects a field of `user` rather than `username` in 1.x.
+ - The config file is passed as-is to Promise-FTP.
+ - I create a file - e.g. deploy.js - in the root of my source code and add a script to its package.json so that I can `npm run deploy`.
 
-You need to list all file patterns that you want to include for uploading, and the exclude option enables exceptions to the rule
+```json
+"scripts": {
+    "deploy": "node deploy"
+},
+```
+
+## Configuration include and exclude
+
+These are lists of [minimatch globs](https://github.com/isaacs/minimatch). ftp-deploy works by checking for each file in your sourece directory, whether it is included by one of the include patterns and whether it is NOT excluded by one of the exclude patterns. In other words:
 
 -   `include`: all files that match will be uploaded. **Note** that a `[ ]` matches nothing
 -   `exclude`: if a file matches the include pattern a subset may nonetheless be excluded
 
 ## Events
 
-To be notified of what ftpDeploy is doing:
+ftp-deploy reports to clients using events. To get the output you need to  implement watchers for "uploading", "uploaded" and "log":
 
 ```js
 ftpDeploy.on("uploading", function(data) {
@@ -79,11 +78,6 @@ ftpDeploy.on("uploaded", function(data) {
 ftpDeploy.on("log", function(data) {
     console.log(data); // same data as uploading event
 });
-```
-
-To continue uploading files even if a file upload fails (not implemented at present):
-
-```js
 ftpDeploy.on("upload-error", function(data) {
     console.log(data.err); // data will also include filename, relativePath, and other goodies
 });
@@ -108,4 +102,3 @@ npm test
 ## ToDo
 
 re-enable continueOnError
-Move uploading and uploaded events to log
