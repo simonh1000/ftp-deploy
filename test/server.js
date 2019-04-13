@@ -2,8 +2,7 @@
 
 // Using non-standard port
 const port = 2121;
-const homeDir =
-    require("os").homedir() + "/code/nodejs/ftp-deploy/playground/remote";
+const homeDir = require("os").homedir() + "/code/nodejs/ftp-deploy/test/remote";
 
 const FtpSrv = require("ftp-srv");
 

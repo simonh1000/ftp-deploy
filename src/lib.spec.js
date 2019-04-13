@@ -56,7 +56,8 @@ describe("dirParseSync", () => {
     it("should traverse simple directory", () => {
         const rootDir = path.join(__dirname, "../test/simple");
         assert.deepEqual(lib.parseLocal(["*"], [], rootDir, "/"), {
-            "/": ["test-inside-root.excl", "test-inside-root.txt"]
+            "/": ["test-inside-root.txt"],
+            inner: ["test-inside-root.excl"]
         });
     });
     it("should respect a negate (!)", () => {
@@ -75,6 +76,18 @@ describe("dirParseSync", () => {
                 "/"
             ),
             { "/": [] }
+        );
+    });
+    it("should exclude dot files/dirs", () => {
+        const rootDir = path.join(__dirname, "../test/test2");
+        assert.deepEqual(
+            lib.parseLocal(
+                ["*", "*/**"],
+                ["n_modules/**/*", "n_modules/**/.*"],
+                rootDir,
+                "/"
+            ),
+            { "/": [],  src: [ 'index.js' ] }
         );
     });
     it("should traverse test directory", () => {

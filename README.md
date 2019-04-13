@@ -18,17 +18,21 @@ var FtpDeploy = require("ftp-deploy");
 var ftpDeploy = new FtpDeploy();
 
 var config = {
-    user: "user", // NOTE that this was username in 1.x
-    password: "password", // optional, prompted if none given
+    user: "user",
+    // Password optional, prompted if none given
+    password: "password",
     host: "ftp.someserver.com",
     port: 21,
     localRoot: __dirname + "/local-folder",
     remoteRoot: "/public_html/remote-folder/",
     // include: ['*', '**/*'],      // this would upload everything except dot files
     include: ["*.php", "dist/*"],
-    exclude: ["dist/**/*.map"], // e.g. exclude sourcemaps - ** exclude: [] if nothing to exclude **
-    deleteRemote: false, // delete ALL existing files at destination before uploading, if true
-    forcePasv: true // Passive mode is forced (EPSV command is not sent)
+    // e.g. exclude sourcemaps, and ALL files in node_modules (including dot files)
+    exclude: ["dist/**/*.map", "node_modules/**", "node_modules/**/.*"],
+    // delete ALL existing files at destination before uploading, if true
+    deleteRemote: false,
+    // Passive mode is forced (EPSV command is not sent)
+    forcePasv: true
 };
 
 // use with promises
@@ -101,4 +105,6 @@ npm test
 
 ## ToDo
 
-re-enable continueOnError
+ - re-enable continueOnError
+ - update newer files only (PR welcome)
+ 

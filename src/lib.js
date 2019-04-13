@@ -1,10 +1,11 @@
 const fs = require("fs");
 const path = require("path");
 const util = require("util");
-const read = require("read");
-
 const Promise = require("bluebird");
+
+const read = require("read");
 const readP = util.promisify(read);
+
 const minimatch = require("minimatch");
 
 // P H A S E  0
