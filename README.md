@@ -72,9 +72,9 @@ ftp-deploy reports to clients using events. To get the output you need to  imple
 
 ```js
 ftpDeploy.on("uploading", function(data) {
-    data.totalFilesCount; // total file count being transferred
-    data.transferredFileCount; // number of files transferred
-    data.filename; // partial path with filename being uploaded
+    console.log(data.totalFilesCount); // total file count being transferred
+    console.log(data.transferredFileCount); // number of files transferred
+    console.log(data.filename); // partial path with filename being uploaded
 });
 ftpDeploy.on("uploaded", function(data) {
     console.log(data); // same data as uploading event
