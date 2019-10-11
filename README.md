@@ -25,10 +25,10 @@ var config = {
     port: 21,
     localRoot: __dirname + "/local-folder",
     remoteRoot: "/public_html/remote-folder/",
-    // include: ['*', '**/*'],      // this would upload everything except dot files
-    include: ["*.php", "dist/*"],
+    // include: ["*", "**/*"],      // this would upload everything except dot files
+    include: ["*.php", "dist/*", ".*"],
     // e.g. exclude sourcemaps, and ALL files in node_modules (including dot files)
-    exclude: ["dist/**/*.map", "node_modules/**", "node_modules/**/.*"],
+    exclude: ["dist/**/*.map", "node_modules/**", "node_modules/**/.*", ".git/**"],
     // delete ALL existing files at destination before uploading, if true
     deleteRemote: false,
     // Passive mode is forced (EPSV command is not sent)
@@ -51,7 +51,7 @@ ftpDeploy.deploy(config, function(err, res) {
 **Note:** 
  - in version 2 the config file expects a field of `user` rather than `username` in 1.x.
  - The config file is passed as-is to Promise-FTP.
- - I create a file - e.g. deploy.js - in the root of my source code and add a script to its package.json so that I can `npm run deploy`.
+ - I create a file - e.g. deploy.js - in the root of my source code and add a script to its `package.json` so that I can `npm run deploy`.
 
 ```json
 "scripts": {
