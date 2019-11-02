@@ -70,9 +70,12 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
         const currItem = path.join(fullDir, item);
         const newRelDir = path.relative(localRootDir, currItem);
 
-        if (fs.lstatSync(currItem).isDirectory()) {
+        const stat = fs.lstatSync(currItem);
+
+        if (stat.isDirectory()) {
             // currItem is a directory. Recurse and attach to accumulator
             let tmp = parseLocal(includes, excludes, localRootDir, newRelDir);
+            // remove any empty directories
             for (let key in tmp) {
                 if (tmp[key].length == 0) {
                     delete tmp[key];
@@ -83,8 +86,10 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
             // currItem is a file
             // acc[relDir] is always created at previous iteration
             if (canIncludePath(includes, excludes, newRelDir)) {
-                // console.log("including", currItem);
-                acc[relDir].push(item);
+                let tmp = {};
+                tmp[item] = stat.mtimeMs;
+                console.log("including", tmp);
+                acc[relDir].push(tmp);
                 return acc;
             }
         }
@@ -105,6 +110,28 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
     const res = files.reduce(handleItem, acc);
     return res;
 }
+
+/*
+simplify({ '/': [ { 'test-inside-root.txt': 1525592919000 } ],
+  inner: [ { 'test-inside-root.excl': 1550948905974.2664 } ] })
+
+{
+    "/": ["test-inside-root.txt"],
+    inner: ["test-inside-root.excl"]
+}
+*/
+var simplify = function(obj) {
+    let keys = Object.keys(obj);
+    console.log(keys);
+    return keys.reduce((acc, key) => {
+        console.log("*1", obj[key]);
+        acc[key] = obj[key].map(o => {
+            console.log("*2", Object.keys(o));
+            return Object.keys(o)[0];
+        });
+        return acc;
+    }, {});
+};
 
 function countFiles(filemap) {
     return Object.values(filemap).reduce((acc, item) => acc.concat(item))
@@ -133,10 +160,11 @@ mkDirExists = (ftp, dir) => {
     // Make the directory using recursive expand
     return ftp.mkdir(dir, true).catch(err => {
         if (err.message.startsWith("EEXIST")) {
+            // directory already exists - convert this to good news
             return Promise.resolve();
         } else {
+            // something really went wrong
             console.log("[mkDirExists]", err.message);
-            // console.log(Object.getOwnPropertyNames(err));
             return Promise.reject(err);
         }
     });
@@ -149,5 +177,6 @@ module.exports = {
     canIncludePath: canIncludePath,
     countFiles: countFiles,
     mkDirExists: mkDirExists,
-    deleteDir: deleteDir
+    deleteDir: deleteDir,
+    simplify
 };
