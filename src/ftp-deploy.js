@@ -30,6 +30,8 @@ const FtpDeployer = function() {
     };
 
     this.makeAllAndUpload = function(remoteDir, filemap) {
+        // TODO pass on the full object
+
         let keys = Object.keys(filemap);
         return Promise.mapSeries(keys, key => {
             // console.log("Processing", key, filemap[key]);
@@ -46,32 +48,72 @@ const FtpDeployer = function() {
     };
     // Creates a remote directory and uploads all of the files in it
     // Resolves a confirmation message on success
-    this.makeAndUpload = (config, relDir, fnames) => {
-        let newDirectory = upath.join(config.remoteRoot, relDir);
-        return this.makeDir(newDirectory, true).then(() => {
-            // console.log("newDirectory", newDirectory);
-            return Promise.mapSeries(fnames, fname => {
-                let tmpFileName = upath.join(config.localRoot, relDir, fname);
-                let tmp = fs.readFileSync(tmpFileName);
-                this.eventObject["filename"] = upath.join(relDir, fname);
-
-                this.emit("uploading", this.eventObject);
-
-                return this.ftp
-                    .put(tmp, upath.join(config.remoteRoot, relDir, fname))
-                    .then(() => {
-                        this.eventObject.transferredFileCount++;
-                        this.emit("uploaded", this.eventObject);
-                        return Promise.resolve("uploaded " + tmpFileName);
-                    })
-                    .catch(err => {
-                        this.eventObject["error"] = err;
-                        this.emit("upload-error", this.eventObject);
-                        // if continue on error....
-                        return Promise.reject(err);
+    this.makeAndUpload = (config, relDir, localFileMetas) => {
+        let newRemoteDir = upath.join(config.remoteRoot, relDir);
+        // console.log("newRemoteDir", newRemoteDir);
+        // ensure directory we need exists. Will resolve if dir already exists
+        return this.makeDir(newRemoteDir)
+            .then(() => {
+                if (config.newFilesOnly) {
+                    return this.ftp.list(newRemoteDir).then(remoteStats => {
+                        return remoteStats.reduce((acc, item) => {
+                            acc[item.name] = {
+                                size: item.size,
+                                date: new Date(item.date).getTime()
+                            };
+                            return acc;
+                        }, {});
                     });
+                } else {
+                    // as we will not be checking for new files, no need to stat the remote directory
+                    return Promise.resolve({});
+                }
+            })
+            .then(remoteStats => {
+                return Promise.mapSeries(localFileMetas, meta => {
+                    // console.log("remoteStats", remoteStats[meta.fname], meta);
+                    let tmpLocalName = upath.join(
+                        config.localRoot,
+                        relDir,
+                        meta.fname
+                    );
+
+                    if (
+                        config.newFilesOnly &&
+                        remoteStats[meta.fname] &&
+                        remoteStats[meta.fname].size == meta.size &&
+                        remoteStats[meta.fname].date >= meta.mtime
+                    ) {
+                        this.emit("log", "skipping: " + meta.fname);
+                        return Promise.resolve("skipped " + tmpLocalName);
+                    }
+
+                    let localFile = fs.readFileSync(tmpLocalName);
+                    this.eventObject["filename"] = upath.join(
+                        relDir,
+                        meta.fname
+                    );
+
+                    this.emit("uploading", this.eventObject);
+
+                    return this.ftp
+                        .put(
+                            localFile,
+                            upath.join(config.remoteRoot, relDir, meta.fname)
+                        )
+                        .then(() => {
+                            this.eventObject.transferredFileCount++;
+                            this.emit("uploaded", this.eventObject);
+                            return Promise.resolve("uploaded " + tmpLocalName);
+                        })
+                        .catch(err => {
+                            this.eventObject["error"] = err;
+                            this.emit("upload-error", this.eventObject);
+                            // if continue on error....
+                            return Promise.reject(err);
+                        });
+                });
             });
-        });
     };
 
     // connects to the server, Resolves the config on success

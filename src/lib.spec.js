@@ -48,32 +48,40 @@ describe("canIncludePath", () => {
     });
 });
 
-describe("dirParseSync", () => {
+describe("parseLocal tests", () => {
     it("should throw on a bad start directory", () => {
         const testDir = "./throw";
-        assert.throws(() => lib.parseLocal(["*"], testDir, testDir), Error);
+        assert.throws(() =>
+            simplify(lib.parseLocal(["*"], testDir, testDir), Error)
+        );
     });
     it("should traverse simple directory", () => {
         const rootDir = path.join(__dirname, "../test/simple");
-        assert.deepEqual(lib.parseLocal(["*"], [], rootDir, "/"), {
+        console.log("***", lib.parseLocal(["*"], [], rootDir, "/"));
+        assert.deepEqual(simplify(lib.parseLocal(["*"], [], rootDir, "/")), {
             "/": ["test-inside-root.txt"],
             inner: ["test-inside-root.excl"]
         });
     });
     it("should respect a negate (!)", () => {
         const rootDir = path.join(__dirname, "../test/simple");
-        assert.deepEqual(lib.parseLocal(["!*.excl"], [], rootDir, "/"), {
-            "/": ["test-inside-root.txt"]
-        });
+        assert.deepEqual(
+            simplify(lib.parseLocal(["!*.excl"], [], rootDir, "/")),
+            {
+                "/": ["test-inside-root.txt"]
+            }
+        );
     });
     it("should respect excludes (directory)", () => {
         const rootDir = path.join(__dirname, "../test/local");
         assert.deepEqual(
-            lib.parseLocal(
-                [".*", "*", "*/**"],
-                [".*", "*", "*/**"],
-                rootDir,
-                "/"
+            simplify(
+                lib.parseLocal(
+                    [".*", "*", "*/**"],
+                    [".*", "*", "*/**"],
+                    rootDir,
+                    "/"
+                )
             ),
             { "/": [] }
         );
@@ -81,13 +89,15 @@ describe("dirParseSync", () => {
     it("should exclude dot files/dirs", () => {
         const rootDir = path.join(__dirname, "../test/test2");
         assert.deepEqual(
-            lib.parseLocal(
-                ["*", "*/**"],
-                ["n_modules/**/*", "n_modules/**/.*"],
-                rootDir,
-                "/"
+            simplify(
+                lib.parseLocal(
+                    ["*", "*/**"],
+                    ["n_modules/**/*", "n_modules/**/.*"],
+                    rootDir,
+                    "/"
+                )
             ),
-            { "/": [],  src: [ 'index.js' ] }
+            { "/": [], src: ["index.js"] }
         );
     });
     it("should traverse test directory", () => {
@@ -96,7 +106,7 @@ describe("dirParseSync", () => {
             "folderA/folderB/FolderC": ["test-inside-c.txt"]
         });
         assert.deepEqual(
-            lib.parseLocal(["*"], [".excludeme/**/*"], rootDir, "/"),
+            simplify(lib.parseLocal(["*"], [".excludeme/**/*"], rootDir, "/")),
             exp2
         );
     });
@@ -111,3 +121,20 @@ let exp = {
         "test-inside-d-2.txt"
     ]
 };
+
+/*
+simplify({ '/': [ { 'test-inside-root.txt': 1525592919000 } ],
+  inner: [ { 'test-inside-root.excl': 1550948905974.2664 } ] })
+
+{
+    "/": ["test-inside-root.txt"],
+    inner: ["test-inside-root.excl"]
+}
+*/
+function simplify(obj) {
+    let keys = Object.keys(obj);
+    return keys.reduce((acc, key) => {
+        acc[key] = obj[key].map(o => o.fname);
+        return acc;
+    }, {});
+}

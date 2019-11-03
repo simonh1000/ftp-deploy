@@ -9,10 +9,11 @@ const config = {
     host: "localhost",
     port: 2121,
     localRoot: path.join(__dirname, "local"),
-    remoteRoot: "/f",
-    deleteRemote: true,
-    exclude: [],
-    include: ["test-inside-root.txt"]
+    remoteRoot: "/ftp",
+    deleteRemote: false,
+    newFilesOnly: true,
+    exclude: ["*/index.html"],
+    include: ["index.html", "folderA/*"]
     // include: ["**/*", "*", ".*"]
 };
 
