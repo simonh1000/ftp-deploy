@@ -1,6 +1,6 @@
 {
     "name": "ftp-deploy",
-    "version": "2.3.5",
+    "version": "2.3.6",
     "author": "Simon Hampton",
     "description": "Deploy files to a remote Ftp location",
     "main": "src/ftp-deploy",
