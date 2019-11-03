@@ -86,9 +86,8 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
             // currItem is a file
             // acc[relDir] is always created at previous iteration
             if (canIncludePath(includes, excludes, newRelDir)) {
-                let tmp = {};
-                tmp[item] = stat.mtimeMs;
-                console.log("including", tmp);
+                let tmp = { fname: item, mtime: stat.mtimeMs, size: stat.size };
+                // console.log("including", tmp);
                 acc[relDir].push(tmp);
                 return acc;
             }
@@ -124,11 +123,7 @@ var simplify = function(obj) {
     let keys = Object.keys(obj);
     console.log(keys);
     return keys.reduce((acc, key) => {
-        console.log("*1", obj[key]);
-        acc[key] = obj[key].map(o => {
-            console.log("*2", Object.keys(o));
-            return Object.keys(o)[0];
-        });
+        acc[key] = obj[key].map(o => o.fname);
         return acc;
     }, {});
 };
