@@ -13,6 +13,7 @@ npm install --save-dev ftp-deploy
 ## Usage
 
 The most basic usage:
+
 ```js
 var FtpDeploy = require("ftp-deploy");
 var ftpDeploy = new FtpDeploy();
@@ -25,12 +26,20 @@ var config = {
     port: 21,
     localRoot: __dirname + "/local-folder",
     remoteRoot: "/public_html/remote-folder/",
-    // include: ["*", "**/*"],      // this would upload everything except dot files
-    include: ["*.php", "dist/*", ".*"],
+    // typical wordpress includes
+    include: ["*.php", "dist/*"],
+    // include: ["*", "**/*", ".*"],      // upload everything, including dot files
     // e.g. exclude sourcemaps, and ALL files in node_modules (including dot files)
-    exclude: ["dist/**/*.map", "node_modules/**", "node_modules/**/.*", ".git/**"],
-    // delete ALL existing files at destination before uploading, if true
+    exclude: [
+        "dist/**/*.map",
+        "node_modules/**",
+        "node_modules/**/.*",
+        ".git/**"
+    ],
+    // if true, delete ALL existing files (expcet dot files) at destination before uploading
     deleteRemote: false,
+    // if true, only uploads changed files (based on last modified date and file size)
+    newFilesOnly: false,
     // Passive mode is forced (EPSV command is not sent)
     forcePasv: true
 };
@@ -48,10 +57,11 @@ ftpDeploy.deploy(config, function(err, res) {
 });
 ```
 
-**Note:** 
- - in version 2 the config file expects a field of `user` rather than `username` in 1.x.
- - The config file is passed as-is to Promise-FTP.
- - I create a file - e.g. deploy.js - in the root of my source code and add a script to its `package.json` so that I can `npm run deploy`.
+**Note:**
+
+-   in version 2 the config file expects a field of `user` rather than `username` in 1.x.
+-   The config file is passed as-is to [promise-ftp](https://github.com/realtymaps/promise-ftp) - see their docs for more options.
+-   I create a file - e.g. deploy.js - in the root of my source code and add a script to its `package.json` so that I can `npm run deploy`.
 
 ```json
 "scripts": {
@@ -68,7 +78,7 @@ These are lists of [minimatch globs](https://github.com/isaacs/minimatch). ftp-d
 
 ## Events
 
-ftp-deploy reports to clients using events. To get the output you need to  implement watchers for "uploading", "uploaded" and "log":
+ftp-deploy reports progress using events. These can be accessed - if desired - by registering listeners for "uploading", "uploaded", "upload-error" and "log":
 
 ```js
 ftpDeploy.on("uploading", function(data) {
@@ -79,11 +89,11 @@ ftpDeploy.on("uploading", function(data) {
 ftpDeploy.on("uploaded", function(data) {
     console.log(data); // same data as uploading event
 });
-ftpDeploy.on("log", function(data) {
-    console.log(data); // same data as uploading event
-});
 ftpDeploy.on("upload-error", function(data) {
     console.log(data.err); // data will also include filename, relativePath, and other goodies
+});
+ftpDeploy.on("log", function(data) {
+    console.log(data); // same data as uploading event
 });
 ```
 
@@ -105,6 +115,5 @@ npm test
 
 ## ToDo
 
- - re-enable continueOnError
- - update newer files only (PR welcome)
- 
+-   re-enable continueOnError
+-   update newer files only (PR welcome)

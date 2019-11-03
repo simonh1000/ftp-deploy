@@ -11,6 +11,7 @@ const config = {
     localRoot: path.join(__dirname, "local"),
     remoteRoot: "/ftp",
     deleteRemote: false,
+    newFilesOnly: true,
     exclude: ["*/index.html"],
     include: ["index.html", "folderA/*"]
     // include: ["**/*", "*", ".*"]

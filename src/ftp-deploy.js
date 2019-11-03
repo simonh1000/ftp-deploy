@@ -54,15 +54,20 @@ const FtpDeployer = function() {
         // ensure directory we need exists. Will resolve if dir already exists
         return this.makeDir(newRemoteDir)
             .then(() => {
-                return this.ftp.list(newRemoteDir).then(remoteStats => {
-                    return remoteStats.reduce((acc, item) => {
-                        acc[item.name] = {
-                            size: item.size,
-                            date: new Date(item.date).getTime()
-                        };
-                        return acc;
-                    }, {});
-                });
+                if (config.newFilesOnly) {
+                    return this.ftp.list(newRemoteDir).then(remoteStats => {
+                        return remoteStats.reduce((acc, item) => {
+                            acc[item.name] = {
+                                size: item.size,
+                                date: new Date(item.date).getTime()
+                            };
+                            return acc;
+                        }, {});
+                    });
+                } else {
+                    // as we will not be checking for new files, no need to stat the remote directory
+                    return Promise.resolve({});
+                }
             })
             .then(remoteStats => {
                 return Promise.mapSeries(localFileMetas, meta => {
@@ -74,6 +79,7 @@ const FtpDeployer = function() {
                     );
 
                     if (
+                        config.newFilesOnly &&
                         remoteStats[meta.fname] &&
                         remoteStats[meta.fname].size == meta.size &&
                         remoteStats[meta.fname].date >= meta.mtime
