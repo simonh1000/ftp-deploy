@@ -31,12 +31,11 @@ const FtpDeployer = function() {
 
     this.makeAllAndUpload = function(remoteDir, filemap) {
         // TODO pass on the full object
-        let filemap_ = lib.simplify(filemap);
 
-        let keys = Object.keys(filemap_);
+        let keys = Object.keys(filemap);
         return Promise.mapSeries(keys, key => {
             // console.log("Processing", key, filemap[key]);
-            return this.makeAndUpload(remoteDir, key, filemap_[key]);
+            return this.makeAndUpload(remoteDir, key, filemap[key]);
         });
     };
 
@@ -49,16 +48,14 @@ const FtpDeployer = function() {
     };
     // Creates a remote directory and uploads all of the files in it
     // Resolves a confirmation message on success
-    this.makeAndUpload = (config, relDir, fnames) => {
+    this.makeAndUpload = (config, relDir, localFileMetas) => {
         let newRemoteDir = upath.join(config.remoteRoot, relDir);
-        console.log("newRemoteDir", newRemoteDir);
+        // console.log("newRemoteDir", newRemoteDir);
         // ensure directory we need exists. Will resolve if dir already exists
         return this.makeDir(newRemoteDir)
             .then(() => {
                 return this.ftp.list(newRemoteDir).then(remoteStats => {
-                    console.log("remoteStats", remoteStats);
                     return remoteStats.reduce((acc, item) => {
-                        console.log(item);
                         acc[item.name] = {
                             size: item.size,
                             date: new Date(item.date).getTime()
@@ -68,22 +65,35 @@ const FtpDeployer = function() {
                 });
             })
             .then(remoteStats => {
-                console.log("remoteStats", remoteStats);
-                return Promise.mapSeries(fnames, fname => {
+                return Promise.mapSeries(localFileMetas, meta => {
+                    // console.log("remoteStats", remoteStats[meta.fname], meta);
                     let tmpLocalName = upath.join(
                         config.localRoot,
                         relDir,
-                        fname
+                        meta.fname
                     );
+
+                    if (
+                        remoteStats[meta.fname] &&
+                        remoteStats[meta.fname].size == meta.size &&
+                        remoteStats[meta.fname].date >= meta.mtime
+                    ) {
+                        this.emit("log", "skipping: " + meta.fname);
+                        return Promise.resolve("skipped " + tmpLocalName);
+                    }
+
                     let localFile = fs.readFileSync(tmpLocalName);
-                    this.eventObject["filename"] = upath.join(relDir, fname);
+                    this.eventObject["filename"] = upath.join(
+                        relDir,
+                        meta.fname
+                    );
 
                     this.emit("uploading", this.eventObject);
 
                     return this.ftp
                         .put(
                             localFile,
-                            upath.join(config.remoteRoot, relDir, fname)
+                            upath.join(config.remoteRoot, relDir, meta.fname)
                         )
                         .then(() => {
                             this.eventObject.transferredFileCount++;

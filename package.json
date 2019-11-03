@@ -2,7 +2,7 @@
     "name": "ftp-deploy",
     "version": "2.3.5",
     "author": "Simon Hampton",
-    "description": "Ftp a folder from your local disk to an ftp destination",
+    "description": "Deploy files to a remote Ftp location",
     "main": "src/ftp-deploy",
     "scripts": {
         "test": "mocha **/**.spec.js",

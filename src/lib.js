@@ -110,24 +110,6 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
     return res;
 }
 
-/*
-simplify({ '/': [ { 'test-inside-root.txt': 1525592919000 } ],
-  inner: [ { 'test-inside-root.excl': 1550948905974.2664 } ] })
-
-{
-    "/": ["test-inside-root.txt"],
-    inner: ["test-inside-root.excl"]
-}
-*/
-var simplify = function(obj) {
-    let keys = Object.keys(obj);
-    console.log(keys);
-    return keys.reduce((acc, key) => {
-        acc[key] = obj[key].map(o => o.fname);
-        return acc;
-    }, {});
-};
-
 function countFiles(filemap) {
     return Object.values(filemap).reduce((acc, item) => acc.concat(item))
         .length;
@@ -166,12 +148,11 @@ mkDirExists = (ftp, dir) => {
 };
 
 module.exports = {
-    checkIncludes: checkIncludes,
-    getPassword: getPassword,
-    parseLocal: parseLocal,
-    canIncludePath: canIncludePath,
-    countFiles: countFiles,
-    mkDirExists: mkDirExists,
-    deleteDir: deleteDir,
-    simplify
+    checkIncludes,
+    getPassword,
+    parseLocal,
+    canIncludePath,
+    countFiles,
+    mkDirExists,
+    deleteDir
 };
