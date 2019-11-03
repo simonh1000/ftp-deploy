@@ -39,45 +39,39 @@ const FtpDeployer = function() {
 
     this.makeDir = function(newDirectory) {
         if (newDirectory === "/") {
-            console.log("********Avoiding creating / directory");
-            return Promise.resolve("unused")
+            return Promise.resolve("unused");
         } else {
-            return this.ftp.mkdir(newDirectory, true)
+            return this.ftp.mkdir(newDirectory, true);
         }
-    }
+    };
     // Creates a remote directory and uploads all of the files in it
     // Resolves a confirmation message on success
     this.makeAndUpload = (config, relDir, fnames) => {
         let newDirectory = upath.join(config.remoteRoot, relDir);
-        return this.makeDir(newDirectory, true)
-            .then(() => {
-                // console.log("newDirectory", newDirectory);
-                return Promise.mapSeries(fnames, fname => {
-                    let tmpFileName = upath.join(
-                        config.localRoot,
-                        relDir,
-                        fname
-                    );
-                    let tmp = fs.readFileSync(tmpFileName);
-                    this.eventObject["filename"] = upath.join(relDir, fname);
+        return this.makeDir(newDirectory, true).then(() => {
+            // console.log("newDirectory", newDirectory);
+            return Promise.mapSeries(fnames, fname => {
+                let tmpFileName = upath.join(config.localRoot, relDir, fname);
+                let tmp = fs.readFileSync(tmpFileName);
+                this.eventObject["filename"] = upath.join(relDir, fname);
 
-                    this.emit("uploading", this.eventObject);
+                this.emit("uploading", this.eventObject);
 
-                    return this.ftp
-                        .put(tmp, upath.join(config.remoteRoot, relDir, fname))
-                        .then(() => {
-                            this.eventObject.transferredFileCount++;
-                            this.emit("uploaded", this.eventObject);
-                            return Promise.resolve("uploaded " + tmpFileName);
-                        })
-                        .catch(err => {
-                            this.eventObject["error"] = err;
-                            this.emit("upload-error", this.eventObject);
-                            // if continue on error....
-                            return Promise.reject(err);
-                        });
-                });
+                return this.ftp
+                    .put(tmp, upath.join(config.remoteRoot, relDir, fname))
+                    .then(() => {
+                        this.eventObject.transferredFileCount++;
+                        this.emit("uploaded", this.eventObject);
+                        return Promise.resolve("uploaded " + tmpFileName);
+                    })
+                    .catch(err => {
+                        this.eventObject["error"] = err;
+                        this.emit("upload-error", this.eventObject);
+                        // if continue on error....
+                        return Promise.reject(err);
+                    });
             });
+        });
     };
 
     // connects to the server, Resolves the config on success
@@ -102,9 +96,12 @@ const FtpDeployer = function() {
                 "/"
             );
             // console.log(filemap);
-            this.emit("log", "Files found to upload: " + JSON.stringify(filemap));
+            this.emit(
+                "log",
+                "Files found to upload: " + JSON.stringify(filemap)
+            );
             this.eventObject["totalFilesCount"] = lib.countFiles(filemap);
-    
+
             return this.makeAllAndUpload(config, filemap);
         } catch (e) {
             return Promise.reject(e);
@@ -115,10 +112,20 @@ const FtpDeployer = function() {
     // Returns config
     this.deleteRemote = config => {
         if (config.deleteRemote) {
-            this.emit("log", "Deleting directory: " + config.remoteRoot);
             return lib
                 .deleteDir(this.ftp, config.remoteRoot)
-                .then(() => config);
+                .then(() => {
+                    this.emit("log", "Deleted directory: " + config.remoteRoot);
+                    return config;
+                })
+                .catch(err => {
+                    this.emit(
+                        "log",
+                        "Deleting failed, trying to continue: " +
+                            JSON.stringify(err)
+                    );
+                    return Promise.resolve(config);
+                });
         }
         return Promise.resolve(config);
     };

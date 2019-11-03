@@ -1,10 +1,11 @@
 const fs = require("fs");
 const path = require("path");
 const util = require("util");
-const read = require("read");
-
 const Promise = require("bluebird");
+
+const read = require("read");
 const readP = util.promisify(read);
+
 const minimatch = require("minimatch");
 
 // P H A S E  0
@@ -45,8 +46,7 @@ function getPassword(config) {
 // Analysing local directory
 function canIncludePath(includes, excludes, filePath) {
     const options = { matchBase: true };
-    let go = (acc, item) =>
-        acc || minimatch(filePath, item, options);
+    let go = (acc, item) => acc || minimatch(filePath, item, options);
     let canInclude = includes.reduce(go, false);
 
     // Now check whether the file should in fact be specifically excluded
@@ -57,7 +57,7 @@ function canIncludePath(includes, excludes, filePath) {
                 const val = minimatch(filePath, exclItem, options);
                 // console.log(`minimatch("${filePath}", "${exclItem}", { matchBase: true })`, val);
                 return acc && !val;
-            }
+            };
             canInclude = excludes.reduce(go2, true);
         }
     }
@@ -68,7 +68,7 @@ function canIncludePath(includes, excludes, filePath) {
 // A method for parsing the source location and storing the information into a suitably formated object
 function parseLocal(includes, excludes, localRootDir, relDir) {
     // reducer
-    let handleItem = function (acc, item) {
+    let handleItem = function(acc, item) {
         const currItem = path.join(fullDir, item);
         const newRelDir = path.relative(localRootDir, currItem);
 
@@ -133,18 +133,17 @@ function deleteDir(ftp, dir) {
 
 mkDirExists = (ftp, dir) => {
     // Make the directory using recursive expand
-   return ftp.mkdir(dir, true)
-        .catch(err => {
-            if (err.message.startsWith("EEXIST")) {
-                // Ignore an error that the directory already exists 
-                return Promise.resolve()
-            } else {
-                console.log('[mkDirExists]', err.message);
-                // console.log(Object.getOwnPropertyNames(err));
-                return Promise.reject(err);
-            }
-        });
-}
+    return ftp.mkdir(dir, true).catch(err => {
+        if (err.message.startsWith("EEXIST")) {
+            // Ignore an error that the directory already exists
+            return Promise.resolve();
+        } else {
+            console.log("[mkDirExists]", err.message);
+            // console.log(Object.getOwnPropertyNames(err));
+            return Promise.reject(err);
+        }
+    });
+};
 
 module.exports = {
     checkIncludes: checkIncludes,
