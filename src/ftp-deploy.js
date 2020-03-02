@@ -7,9 +7,10 @@ const Promise = require("bluebird");
 const fs = require("fs");
 
 var PromiseFtp = require("promise-ftp");
+var PromiseSftp = require("ssh2-sftp-client");
 const lib = require("./lib");
 
-/* interim structure 
+/* interim structure
 {
     '/': ['test-inside-root.txt'],
     'folderA': ['test-inside-a.txt'],
@@ -76,7 +77,7 @@ const FtpDeployer = function() {
 
     // connects to the server, Resolves the config on success
     this.connect = config => {
-        this.ftp = new PromiseFtp();
+        this.ftp = config.sftp ? new PromiseSftp() : new PromiseFtp();
 
         return this.ftp.connect(config).then(serverMessage => {
             this.emit("log", "Connected to: " + config.host);
