@@ -79,12 +79,38 @@ const FtpDeployer = function() {
     this.connect = config => {
         this.ftp = config.sftp ? new PromiseSftp() : new PromiseFtp();
 
+        // sftp client does not provide a connection status
+        // so instead provide one ourselfs
+        if (config.sftp) {
+          this.connectionStatus = "disconnected";
+          this.ftp.on("end", this.handleDisconnect);
+          this.ftp.on("close", this.handleDisconnect);
+        }
+
         return this.ftp.connect(config).then(serverMessage => {
             this.emit("log", "Connected to: " + config.host);
             this.emit("log", "Connected: Server message: " + serverMessage);
 
+            // sftp does not provide a connection status
+            // so instead provide one ourselfs
+            if (config.sftp) {
+              this.connectionStatus = "connected";
+            }
+
             return config;
         });
+    };
+
+    this.getConnectionStatus = () => {
+      // only ftp client provides connection status
+      // sftp client connection status is handled using events
+      return typeof this.ftp.getConnectionStatus === "function"
+        ? this.ftp.getConnectionStatus()
+        : this.connectionStatus;
+    };
+
+    this.handleDisconnect = () => {
+      this.connectionStatus = "disconnected";
     };
 
     // creates list of all files to upload and starts upload process
@@ -149,7 +175,7 @@ const FtpDeployer = function() {
             .catch(err => {
                 if (
                     this.ftp &&
-                    this.ftp.getConnectionStatus() != "disconnected"
+                    this.getConnectionStatus() != "disconnected"
                 )
                     this.ftp.end();
                 if (typeof cb == "function") {
