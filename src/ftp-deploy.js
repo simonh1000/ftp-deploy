@@ -119,6 +119,7 @@ const FtpDeployer = function() {
     // connects to the server, Resolves the config on success
     this.connect = config => {
         this.ftp = new PromiseFtp();
+        this.emit("log", "Attempting to connect to: " + config.host);
 
         return this.ftp.connect(config).then(serverMessage => {
             this.emit("log", "Connected to: " + config.host);

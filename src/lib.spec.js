@@ -57,7 +57,6 @@ describe("parseLocal tests", () => {
     });
     it("should traverse simple directory", () => {
         const rootDir = path.join(__dirname, "../test/simple");
-        console.log("***", lib.parseLocal(["*"], [], rootDir, "/"));
         assert.deepEqual(simplify(lib.parseLocal(["*"], [], rootDir, "/")), {
             "/": ["test-inside-root.txt"],
             inner: ["test-inside-root.excl"]
