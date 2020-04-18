@@ -35,17 +35,10 @@ var config = {
     forcePasv: true
 };
 
-// use with promises
 ftpDeploy
     .deploy(config)
     .then(res => console.log("finished:", res))
     .catch(err => console.log(err));
-
-// use with callback
-ftpDeploy.deploy(config, function(err, res) {
-    if (err) console.log(err);
-    else console.log("finished:", res);
-});
 ```
 
 **Note:** 
@@ -58,6 +51,16 @@ ftpDeploy.deploy(config, function(err, res) {
     "deploy": "node deploy"
 },
 ```
+
+ - You can use callback instead of promise.
+
+ ```js
+ // use with callback
+ftpDeploy.deploy(config, function(err, res) {
+    if (err) console.log(err);
+    else console.log("finished:", res);
+});
+ ```
 
 ## Configuration include and exclude
 
