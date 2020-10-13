@@ -6,3 +6,5 @@ test/remote
 playground
 .DS_Store
 notes.md
+.env
+dist
