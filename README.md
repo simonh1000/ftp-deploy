@@ -13,6 +13,7 @@ npm install --save-dev ftp-deploy
 ## Usage
 
 The most basic usage:
+
 ```js
 var FtpDeploy = require("ftp-deploy");
 var ftpDeploy = new FtpDeploy();
@@ -28,7 +29,12 @@ var config = {
     // include: ["*", "**/*"],      // this would upload everything except dot files
     include: ["*.php", "dist/*", ".*"],
     // e.g. exclude sourcemaps, and ALL files in node_modules (including dot files)
-    exclude: ["dist/**/*.map", "node_modules/**", "node_modules/**/.*", ".git/**"],
+    exclude: [
+        "dist/**/*.map",
+        "node_modules/**",
+        "node_modules/**/.*",
+        ".git/**"
+    ],
     // delete ALL existing files at destination before uploading, if true
     deleteRemote: false,
     // Passive mode is forced (EPSV command is not sent)
@@ -41,10 +47,11 @@ ftpDeploy
     .catch(err => console.log(err));
 ```
 
-**Note:** 
- - in version 2 the config file expects a field of `user` rather than `username` in 1.x.
- - The config file is passed as-is to Promise-FTP.
- - I create a file - e.g. deploy.js - in the root of my source code and add a script to its `package.json` so that I can `npm run deploy`.
+**Note:**
+
+-   in version 2 the config file expects a field of `user` rather than `username` in 1.x.
+-   The config file is passed as-is to Promise-FTP.
+-   I create a file - e.g. deploy.js - in the root of my source code and add a script to its `package.json` so that I can `npm run deploy`.
 
 ```json
 "scripts": {
@@ -71,7 +78,7 @@ These are lists of [minimatch globs](https://github.com/isaacs/minimatch). ftp-d
 
 ## Events
 
-ftp-deploy reports to clients using events. To get the output you need to  implement watchers for "uploading", "uploaded" and "log":
+ftp-deploy reports to clients using events. To get the output you need to implement watchers for "uploading", "uploaded" and "log":
 
 ```js
 ftpDeploy.on("uploading", function(data) {
@@ -108,6 +115,5 @@ npm test
 
 ## ToDo
 
- - re-enable continueOnError
- - update newer files only (PR welcome)
- 
+-   re-enable continueOnError
+-   update newer files only (PR welcome)

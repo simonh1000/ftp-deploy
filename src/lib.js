@@ -43,19 +43,21 @@ function getPassword(config) {
     }
 }
 
-// Analysing local firstory
-
+// Analysing local directory
 function canIncludePath(includes, excludes, filePath) {
-    let go = (acc, item) =>
-        acc || minimatch(filePath, item, { matchBase: true });
+    const options = { matchBase: true };
+    let go = (acc, item) => acc || minimatch(filePath, item, options);
     let canInclude = includes.reduce(go, false);
 
     // Now check whether the file should in fact be specifically excluded
     if (canInclude) {
         // if any excludes match return false
         if (excludes) {
-            let go2 = (acc, item) =>
-                acc && !minimatch(filePath, item, { matchBase: true });
+            let go2 = (acc, exclItem) => {
+                const val = minimatch(filePath, exclItem, options);
+                // console.log(`minimatch("${filePath}", "${exclItem}", { matchBase: true })`, val);
+                return acc && !val;
+            };
             canInclude = excludes.reduce(go2, true);
         }
     }
@@ -133,6 +135,7 @@ mkDirExists = (ftp, dir) => {
     // Make the directory using recursive expand
     return ftp.mkdir(dir, true).catch(err => {
         if (err.message.startsWith("EEXIST")) {
+            // Ignore an error that the directory already exists
             return Promise.resolve();
         } else {
             console.log("[mkDirExists]", err.message);

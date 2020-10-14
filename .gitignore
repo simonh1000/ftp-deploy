@@ -2,6 +2,7 @@ node_modules/
 ignore
 .vscode
 test/remote
+!test/test2/node_modules
 
 playground
 .DS_Store
