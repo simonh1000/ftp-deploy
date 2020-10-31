@@ -23,6 +23,8 @@ const lib = require("./lib");
 const FtpDeployer = function () {
     // The constructor for the super class.
     events.EventEmitter.call(this);
+    this.transferFileMap = null,
+    this.deleteFileMap = null,
     this.ftp = null;
     this.eventObject = {
         totalFilesCount: 0,
@@ -31,11 +33,11 @@ const FtpDeployer = function () {
         filename: "",
     };
 
-    this.makeAllAndUpload = function (remoteDir, filemap) {
-        let keys = Object.keys(filemap);
+    this.execUpload = (config) => {
+        let keys = Object.keys(this.transferFileMap);
         return Promise.mapSeries(keys, (key) => {
             // console.log("Processing", key, filemap[key]);
-            return this.makeAndUpload(remoteDir, key, filemap[key]);
+            return this.makeAndUpload(config, key, this.transferFileMap[key]);
         });
     };
 
@@ -48,6 +50,7 @@ const FtpDeployer = function () {
     };
     // Creates a remote directory and uploads all of the files in it
     // Resolves a confirmation message on success
+
     this.makeAndUpload = (config, relDir, fnames) => {
         let newDirectory = upath.join(config.remoteRoot, relDir);
         return this.makeDir(newDirectory, true).then(() => {
@@ -97,22 +100,22 @@ const FtpDeployer = function () {
     };
 
     // creates list of all files to upload and starts upload process
-    this.checkLocalAndUpload = (config) => {
+    this.checkLocal = (config) => {
         try {
-            let filemap = lib.parseLocal(
+            this.transferFileMap = lib.parseLocal(
                 config.include,
                 config.exclude,
                 config.localRoot,
                 "/"
             );
-            // console.log(filemap);
+            // console.log(this.transferFileMap);
             this.emit(
                 "log",
-                "Files found to upload: " + JSON.stringify(filemap)
+                "Files found to upload: " + JSON.stringify(this.transferFileMap)
             );
-            this.eventObject["totalFilesCount"] = lib.countFiles(filemap);
+            this.eventObject["totalFilesCount"] += lib.countFiles(this.transferFileMap);
 
-            return this.makeAllAndUpload(config, filemap);
+            return Promise.resolve(config);
         } catch (e) {
             return Promise.reject(e);
         }
@@ -133,6 +136,9 @@ const FtpDeployer = function () {
                 let fnames = lst
                     .filter(f => (f.type != "d" && ((fmask == '') || (f.name == fmask))))
                     .map(f => path.posix.join(dir, f.name));
+
+                this.deleteFileMap = this.deleteFileMap.concat(dirNames, fnames);
+                this.eventObject["totalFilesCount"] += dirNames.length + fnames.length;
 
                 // delete sub-directories and then all files
                 return Promise.mapSeries(dirNames, dirName => {
@@ -165,6 +171,7 @@ const FtpDeployer = function () {
     // Returns config
     this.deleteRemote = (config) => {
         if (config.deleteRemote) {
+            this.deleteFileMap = [];
             let filemap = lib.parseDeletes(
                 config.delete,
                 config.remoteRoot
@@ -172,7 +179,7 @@ const FtpDeployer = function () {
             return this
                 .execDeleteRemotes(filemap, config.remoteRoot)
                 .then((done) => {
-                    this.emit("log", "Deleted remotes: " + JSON.stringify(filemap));
+                    this.emit("log", "Deleted remotes: " + JSON.stringify(done));
                     return config;
                 })
                 .catch((err) => {
@@ -191,15 +198,24 @@ const FtpDeployer = function () {
         return lib
             .checkIncludes(config)
             .then(lib.getPassword)
+            .then(this.checkLocal)
             .then(this.connect)
             .then(this.deleteRemote)
-            .then(this.checkLocalAndUpload)
+            .then(this.execUpload)
             .then((res) => {
                 this.ftp.end();
+                const data = {
+                  totalFilesCount: this.eventObject.totalFilesCount,
+                  transferredFileCount: this.eventObject.transferredFileCount,
+                  deletedFileCount: this.eventObject.deletedFileCount,
+                  transferFileMap: this.transferFileMap,
+                  deleteFileMap: this.deleteFileMap,
+                  res: res,
+                }
                 if (typeof cb == "function") {
-                    cb(null, res);
+                    cb(null, data);
                 } else {
-                    return Promise.resolve(res);
+                    return Promise.resolve(data);
                 }
             })
             .catch((err) => {
