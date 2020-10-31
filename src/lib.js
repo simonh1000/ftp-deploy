@@ -106,27 +106,18 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
     return res;
 }
 
+function parseDeletes(deletes, remoteRootDir) {
+    const res = [];
+    deletes = deletes || [];
+    deletes.forEach(function(item) {
+        res.push(item.slice(-1) == '/' ? item.slice(0,-1) : item);
+    });
+    return res;
+}
+
 function countFiles(filemap) {
     return Object.values(filemap).reduce((acc, item) => acc.concat(item))
         .length;
-}
-
-function deleteDir(ftp, dir) {
-    return ftp.list(dir).then(lst => {
-        let dirNames = lst
-            .filter(f => f.type == "d" && f.name != ".." && f.name != ".")
-            .map(f => path.posix.join(dir, f.name));
-
-        let fnames = lst
-            .filter(f => f.type != "d")
-            .map(f => path.posix.join(dir, f.name));
-
-        // delete sub-directories and then all files
-        return Promise.mapSeries(dirNames, dirName => {
-            // deletes everything in sub-directory, and then itself
-            return deleteDir(ftp, dirName).then(() => ftp.rmdir(dirName));
-        }).then(() => Promise.mapSeries(fnames, fname => ftp.delete(fname)));
-    });
 }
 
 mkDirExists = (ftp, dir) => {
@@ -146,8 +137,8 @@ module.exports = {
     checkIncludes: checkIncludes,
     getPassword: getPassword,
     parseLocal: parseLocal,
+    parseDeletes: parseDeletes,
     canIncludePath: canIncludePath,
     countFiles: countFiles,
-    mkDirExists: mkDirExists,
-    deleteDir: deleteDir
+    mkDirExists: mkDirExists
 };

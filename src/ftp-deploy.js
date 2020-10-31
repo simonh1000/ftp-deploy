@@ -1,5 +1,6 @@
 "use strict";
 
+const path = require("path");
 const upath = require("upath");
 const util = require("util");
 const events = require("events");
@@ -9,7 +10,7 @@ const fs = require("fs");
 var PromiseFtp = require("promise-ftp");
 const lib = require("./lib");
 
-/* interim structure 
+/* interim structure
 {
     '/': ['test-inside-root.txt'],
     'folderA': ['test-inside-a.txt'],
@@ -26,6 +27,7 @@ const FtpDeployer = function () {
     this.eventObject = {
         totalFilesCount: 0,
         transferredFileCount: 0,
+        deletedFileCount: 0,
         filename: "",
     };
 
@@ -116,14 +118,61 @@ const FtpDeployer = function () {
         }
     };
 
+    this.execDeleteRemotes= (deletes, remoteRootDir='') => {
+        return Promise.mapSeries(deletes, item => {
+            // use parent dir to locate search mask
+            let dir = path.posix.join(remoteRootDir, item.split('/').slice(0,-1).join('/'));
+            let fmask = item.split('/').slice(-1);
+
+            return this.ftp.list(dir).then(lst => {
+
+                let dirNames = lst
+                    .filter(f => f.type == "d" && f.name != ".." && f.name != "." && ((fmask == '') || (f.name == fmask)))
+                    .map(f => path.posix.join(dir, f.name));
+
+                let fnames = lst
+                    .filter(f => (f.type != "d" && ((fmask == '') || (f.name == fmask))))
+                    .map(f => path.posix.join(dir, f.name));
+
+                // delete sub-directories and then all files
+                return Promise.mapSeries(dirNames, dirName => {
+                    // deletes everything in sub-directory, and then itself
+                    return this
+                        .execDeleteRemotes([dirName + '/'])
+                        .then(() => this.ftp.rmdir(dirName)
+                            .then(() => {
+                              this.eventObject.deletedFileCount++;
+                              this.eventObject["filename"] = dirName;
+                              this.emit("removed", this.eventObject);
+                            })
+                        );
+                })
+                    .then(() =>
+                        Promise.mapSeries(fnames, fname =>
+                            this.ftp.delete(fname)
+                                .then(() => {
+                                    this.eventObject.deletedFileCount++;
+                                    this.eventObject["filename"] = fname;
+                                    this.emit("removed", this.eventObject);
+                                })
+                        )
+                    );
+            })
+        });
+    }
+
     // Deletes remote directory if requested by config
     // Returns config
     this.deleteRemote = (config) => {
         if (config.deleteRemote) {
-            return lib
-                .deleteDir(this.ftp, config.remoteRoot)
-                .then(() => {
-                    this.emit("log", "Deleted directory: " + config.remoteRoot);
+            let filemap = lib.parseDeletes(
+                config.delete,
+                config.remoteRoot
+            );
+            return this
+                .execDeleteRemotes(filemap, config.remoteRoot)
+                .then((done) => {
+                    this.emit("log", "Deleted remotes: " + JSON.stringify(filemap));
                     return config;
                 })
                 .catch((err) => {
