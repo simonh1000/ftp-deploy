@@ -55,7 +55,7 @@ const FtpDeployer = function () {
             return Promise.mapSeries(fnames, (fname) => {
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
                 let tmp = fs.readFileSync(tmpFileName);
-                this.eventObject["filename"] = upath.join(relDir, fname);
+                this.eventObject["filename"] = upath.join(config.remoteRoot, fname);
 
                 this.emit("uploading", this.eventObject);
 
