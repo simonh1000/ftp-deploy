@@ -112,6 +112,9 @@ function parseDeletes(deletes, remoteRootDir) {
     deletes.forEach(function(item) {
         res.push(item.slice(-1) == '/' ? item.slice(0,-1) : item);
     });
+    if (res.length == 0) {
+      res.push('/');
+    }
     return res;
 }
 
