@@ -259,16 +259,15 @@ function fh_get_ftp_filelists(fileFolderHashSums, hashes_on_ftp, hashes_in_site)
 
 function getFolderHashSumsDiffs(fileFolderHashSums, localRoot, ftp_content) {
     let res = null;
-    try {
-        const fname = path.join(localRoot, fileFolderHashSums)
-        if (fs.existsSync(fname)) {
-            res = fh_get_ftp_filelists(
-                      fileFolderHashSums,
-                      fh_make_folder_list([], '', fh_folder_hash_to_obj(ftp_content).children),
-                      fh_make_folder_list([], '', fh_read_folder_hash(fname).children)
-                  );
-        }
-    } catch(err) {
+    const fname = path.join(localRoot, fileFolderHashSums)
+    if (fs.existsSync(fname)) {
+        res = fh_get_ftp_filelists(
+                  fileFolderHashSums,
+                  fh_make_folder_list([], '', fh_folder_hash_to_obj(ftp_content).children),
+                  fh_make_folder_list([], '', fh_read_folder_hash(fname).children)
+              );
+    } else {
+      throw new Error("Cannot state the local file: " + fileFolderHashSums + " - fallback to full update!");
     }
 
     // return the prepared diff lists
