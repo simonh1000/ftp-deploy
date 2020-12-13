@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.3.7
+
+    - tidier errors when connect fails
+
 ## 2.3.4-6
 
     - update deps
