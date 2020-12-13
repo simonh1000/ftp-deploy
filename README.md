@@ -32,7 +32,9 @@ var config = {
     // delete ALL existing files at destination before uploading, if true
     deleteRemote: false,
     // Passive mode is forced (EPSV command is not sent)
-    forcePasv: true
+    forcePasv: true,
+    // use sftp or ftp
+    sftp: false
 };
 
 ftpDeploy
@@ -41,7 +43,7 @@ ftpDeploy
     .catch(err => console.log(err));
 ```
 
-**Note:** 
+**Note:**
  - in version 2 the config file expects a field of `user` rather than `username` in 1.x.
  - The config file is passed as-is to Promise-FTP.
  - I create a file - e.g. deploy.js - in the root of my source code and add a script to its `package.json` so that I can `npm run deploy`.
@@ -110,4 +112,3 @@ npm test
 
  - re-enable continueOnError
  - update newer files only (PR welcome)
- 

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.9
+
+    - Add support for SFTP - thanks @der-On
+
 ## 2.3.7
 
     - tidier errors when connect fails

@@ -1,6 +1,6 @@
 {
     "name": "ftp-deploy",
-    "version": "2.3.8",
+    "version": "2.4.0",
     "author": "Simon Hampton",
     "description": "Ftp a folder from your local disk to an ftp destination",
     "main": "src/ftp-deploy",
@@ -9,17 +9,18 @@
         "server": "node test/server.js"
     },
     "dependencies": {
-        "bluebird": "^3.7.0",
+        "bluebird": "^3.7.2",
         "minimatch": "3.0.4",
         "promise-ftp": "^1.3.5",
         "read": "^1.0.7",
+        "ssh2-sftp-client": "^5.3.2",
         "upath": "^1.2.0"
     },
     "devDependencies": {
         "chai": "^4.2.0",
         "delete": "^1.1.0",
-        "ftp-srv": "^4.2.0",
-        "mocha": "^6.2.1"
+        "ftp-srv": "^4.3.4",
+        "mocha": "^6.2.3"
     },
     "keywords": [
         "ftp",
