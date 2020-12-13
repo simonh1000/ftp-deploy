@@ -87,18 +87,26 @@ const FtpDeployer = function () {
             this.ftp.on("close", this.handleDisconnect);
         }
 
-        return this.ftp.connect(config).then((serverMessage) => {
-            this.emit("log", "Connected to: " + config.host);
-            this.emit("log", "Connected: Server message: " + serverMessage);
+        return this.ftp
+            .connect(config)
+            .then((serverMessage) => {
+                this.emit("log", "Connected to: " + config.host);
+                this.emit("log", "Connected: Server message: " + serverMessage);
 
-            // sftp does not provide a connection status
-            // so instead provide one ourself
-            if (config.sftp) {
-                this.connectionStatus = "connected";
-            }
+                // sftp does not provide a connection status
+                // so instead provide one ourself
+                if (config.sftp) {
+                    this.connectionStatus = "connected";
+                }
 
-            return config;
-        });
+                return config;
+            })
+            .catch((err) => {
+                return Promise.reject({
+                    code: err.code,
+                    message: "connect: " + err.message,
+                });
+            });
     };
 
     this.getConnectionStatus = () => {
