@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.4.9
+## 2.4.0
 
     - Add support for SFTP - thanks @der-On
 
