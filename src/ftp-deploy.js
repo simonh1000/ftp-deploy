@@ -8,6 +8,7 @@ const events = require("events");
 const Promise = require("bluebird");
 
 var PromiseFtp = require("promise-ftp");
+var PromiseSftp = require("ssh2-sftp-client");
 const lib = require("./lib");
 
 /* interim structure
@@ -148,13 +149,27 @@ const FtpDeployer = function () {
 
     // connects to the server, Resolves the config on success
     this.connect = (config) => {
-        this.ftp = new PromiseFtp();
+        this.ftp = config.sftp ? new PromiseSftp() : new PromiseFtp();
+
+        // sftp client does not provide a connection status
+        // so instead provide one ourselfs
+        if (config.sftp) {
+            this.connectionStatus = "disconnected";
+            this.ftp.on("end", this.handleDisconnect);
+            this.ftp.on("close", this.handleDisconnect);
+        }
 
         return this.ftp
             .connect(config)
             .then((serverMessage) => {
                 this.emit("log", "Connected to: " + config.host);
                 this.emit("log", "Connected: Server message: " + serverMessage);
+
+                // sftp does not provide a connection status
+                // so instead provide one ourself
+                if (config.sftp) {
+                    this.connectionStatus = "connected";
+                }
 
                 return config;
             })
@@ -164,6 +179,18 @@ const FtpDeployer = function () {
                     message: "connect: " + err.message,
                 });
             });
+    };
+
+    this.getConnectionStatus = () => {
+        // only ftp client provides connection status
+        // sftp client connection status is handled using events
+        return typeof this.ftp.getConnectionStatus === "function"
+            ? this.ftp.getConnectionStatus()
+            : this.connectionStatus;
+    };
+
+    this.handleDisconnect = () => {
+        this.connectionStatus = "disconnected";
     };
 
     // creates list of all files to upload and starts upload process
@@ -290,10 +317,7 @@ const FtpDeployer = function () {
             })
             .catch((err) => {
                 console.log("Err", err.message);
-                if (
-                    this.ftp &&
-                    this.ftp.getConnectionStatus() != "disconnected"
-                )
+                if (this.ftp && this.getConnectionStatus() != "disconnected")
                     this.ftp.end();
                 if (typeof cb == "function") {
                     cb(err, null);
