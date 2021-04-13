@@ -31,6 +31,8 @@ var config = {
     exclude: ["dist/**/*.map", "node_modules/**", "node_modules/**/.*", ".git/**"],
     // delete ALL existing files at destination before uploading, if true
     deleteRemote: false,
+    // files on remote to be preserved, when deleteRemote is set to true
+    preserve: [".htaccess"],
     // Passive mode is forced (EPSV command is not sent)
     forcePasv: true,
     // use sftp or ftp
@@ -44,9 +46,9 @@ ftpDeploy
 ```
 
 **Note:**
- - in version 2 the config file expects a field of `user` rather than `username` in 1.x.
- - The config file is passed as-is to Promise-FTP.
- - I create a file - e.g. deploy.js - in the root of my source code and add a script to its `package.json` so that I can `npm run deploy`.
+- in version 2 the config file expects a field of `user` rather than `username` in 1.x.
+- The config file is passed as-is to Promise-FTP.
+- I create a file - e.g. deploy.js - in the root of my source code and add a script to its `package.json` so that I can `npm run deploy`.
 
 ```json
 "scripts": {
@@ -54,7 +56,7 @@ ftpDeploy
 },
 ```
 
- - You can use callback instead of promise.
+- You can use callback instead of promise.
 
  ```js
  // use with callback
@@ -110,5 +112,5 @@ npm test
 
 ## ToDo
 
- - re-enable continueOnError
- - update newer files only (PR welcome)
+- re-enable continueOnError
+- update newer files only (PR welcome)
