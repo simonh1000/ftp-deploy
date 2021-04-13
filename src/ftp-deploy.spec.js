@@ -20,6 +20,7 @@ const config = {
     remoteRoot: "/ftp",
     exclude: [],
     include: ["folderA/**/*", "test-inside-root.txt"],
+    preserve: [],
     debugMode: true
 };
 

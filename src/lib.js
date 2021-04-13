@@ -111,15 +111,15 @@ function countFiles(filemap) {
         .length;
 }
 
-function deleteDir(ftp, dir) {
+function deleteDir(ftp, dir, preserve = []) {
     return ftp.list(dir).then(lst => {
         let dirNames = lst
-            .filter(f => f.type == "d" && f.name != ".." && f.name != ".")
-            .map(f => path.posix.join(dir, f.name));
+          .filter(f => f.type == "d" && f.name != ".." && f.name != "." && !preserve.includes(f.name))
+          .map(f => path.posix.join(dir, f.name));
 
         let fnames = lst
-            .filter(f => f.type != "d")
-            .map(f => path.posix.join(dir, f.name));
+          .filter(f => f.type != "d" && !preserve.includes(f.name))
+          .map(f => path.posix.join(dir, f.name));
 
         // delete sub-directories and then all files
         return Promise.mapSeries(dirNames, dirName => {
