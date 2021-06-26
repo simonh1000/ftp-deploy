@@ -1,16 +1,15 @@
-// Quick start
+const FtpSrv = require("ftp-srv");
 
 // Using non-standard port
 const port = 2121;
 const homeDir = require("os").homedir() + "/code/nodejs/ftp-deploy/test/remote";
-
-const FtpSrv = require("ftp-srv");
+console.log("serving", homeDir);
 
 const options = {
     greeting: ["test ftp server", homeDir],
     anonymous: true,
     pasv_url: "127.0.0.1",
-    url: "ftp://127.0.0.1:" + port
+    url: "ftp://127.0.0.1:" + port,
 };
 
 const ftpServer = new FtpSrv(options);
@@ -27,12 +26,12 @@ ftpServer.on("client-error", ({ connection, context, error }) => {
     console.log(error);
 });
 
-ftpServer.on("error", err => {
+ftpServer.on("error", (err) => {
     console.log("**error**");
     console.log(err);
 });
 
-ftpServer.on("uncaughtException", err => {
+ftpServer.on("uncaughtException", (err) => {
     console.log("**uncaughtException**");
     console.log(err);
 });
@@ -42,6 +41,6 @@ ftpServer
     .then(() => {
         console.log(`Serving ${homeDir} on port: ${port}`);
     })
-    .catch(err => {
+    .catch((err) => {
         console.log("[error]", err);
     });
