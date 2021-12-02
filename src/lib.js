@@ -112,7 +112,7 @@ function countFiles(filemap) {
 }
 
 function deleteDir(ftp, dir) {
-    return ftp.list(dir).then(lst => {
+    const internalDelete = lst => {
         let dirNames = lst
             .filter(f => f.type == "d" && f.name != ".." && f.name != ".")
             .map(f => path.posix.join(dir, f.name));
@@ -126,7 +126,10 @@ function deleteDir(ftp, dir) {
             // deletes everything in sub-directory, and then itself
             return deleteDir(ftp, dirName).then(() => ftp.rmdir(dirName));
         }).then(() => Promise.mapSeries(fnames, fname => ftp.delete(fname)));
-    });
+    }
+
+    // The "-al" option can get files that start with., But it is not included in RFC959 and will not always respond.
+    return ftp.list('-al ' + dir).then(internalDelete, () => ftp.list(dir).then(internalDelete));
 }
 
 mkDirExists = (ftp, dir) => {
