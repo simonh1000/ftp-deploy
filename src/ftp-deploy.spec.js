@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const utils = require("util");
 
-// var assert = require("assert");
+const assert = require("assert");
 
 const statP = utils.promisify(fs.stat);
 
@@ -66,8 +66,12 @@ describe("deploy tests", () => {
             .then(() => {
                 // Should reject if file does not exist
                 return statP(remoteDir + "/test-inside-root.txt");
+            }).then((stats) => {
+                assert.equal(stats.size, 18, 'test-inside-root.txt should be 18 bytes long')
             })
-            .catch(err => done(err));
+            .catch(err => {
+                throw err;
+            });
     });
     it("should put a dot file", () => {
         const d = new FtpDeploy();
