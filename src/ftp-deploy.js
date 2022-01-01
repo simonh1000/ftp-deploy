@@ -94,7 +94,8 @@ const FtpDeployer = function () {
             filemap
         }), "utf-8");
         return this.ftp
-            .put(filemapBuffer, path.join(remoteRoot, filemapName));
+            .cwd(remoteRoot)
+            .then(() => this.ftp.put(filemapBuffer, filemapName));
     }
 
 
