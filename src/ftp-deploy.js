@@ -42,16 +42,16 @@ const FtpDeployer = function () {
     };
 
 
-    this.downloadFilemap = function (remoteRoot) {
+    this.downloadFilemap = function (remoteRoot, filemapName) {
         return new Promise((resolve, reject) => {
             this.ftp
-                .get(path.join(remoteRoot, ".file-map.json"))
+                .get(path.join(remoteRoot, filemapName))
                 .then((stream) => {
                     var writer = new memoryStreams.WritableStream();
                     stream.pipe(writer)
                     stream.on('data', (data) => {
                         try {
-                            let obj = JSON.parse(writer.toString());                            
+                            let obj = JSON.parse(writer.toString());
                             resolve(obj?.filemap);
                         } catch (error) {
                             console.log("Invalid file-map")
@@ -86,7 +86,7 @@ const FtpDeployer = function () {
         this.emit("log", "files to upload", filesToUpload);
     }
 
-    this.uploadFileMap = function (remoteRoot, filemap) {
+    this.uploadFileMap = function (remoteRoot, filemapName, filemap) {
         let filemapBuffer = Buffer.from(JSON.stringify({
             date: new Date(),
             user: os.userInfo().username,
@@ -94,7 +94,7 @@ const FtpDeployer = function () {
             filemap
         }), "utf-8");
         return this.ftp
-            .put(filemapBuffer, path.join(remoteRoot, ".file-map.json"));
+            .put(filemapBuffer, path.join(remoteRoot, filemapName));
     }
 
 
@@ -190,6 +190,8 @@ const FtpDeployer = function () {
                 "/",
                 config.updateNewerFiles
             );
+            let filemapName = config.filemapName || ".ftp-deploy-file-map.json"
+
             let uploadFiles = (filemap) => {
                 // console.log(filemap);
                 this.emit("log",
@@ -203,10 +205,10 @@ const FtpDeployer = function () {
 
             if (config.updateNewerFiles) {
                 let filemapToUpload = {};
-                return this.downloadFilemap(config.remoteRoot)
+                return this.downloadFilemap(config.remoteRoot, filemapName)
                     .then((remoteFilemap) => this.pruneFilemap(localFilemap, remoteFilemap, filemapToUpload))
                     .then(() => uploadFiles(filemapToUpload))
-                    .then(() => this.uploadFileMap(config.remoteRoot, localFilemap));
+                    .then(() => this.uploadFileMap(config.remoteRoot, filemapName, localFilemap));
             } else return uploadFiles(localFilemap);
 
         } catch (e) {

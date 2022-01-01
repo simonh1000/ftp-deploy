@@ -90,6 +90,7 @@ describe("deploy tests", () => {
         const ftpDeploy = new FtpDeploy();
         const config = newTestConfig();
         config.updateNewerFiles = true;
+
         const filesUploaded = [];
         ftpDeploy.on("uploading", function (data) {
             filesUploaded.push(data.filename);
