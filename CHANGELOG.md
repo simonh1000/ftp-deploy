@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.2
+
+    - Implement updateNewerFiles option
+
 ## 2.4.0
 
     - Add support for SFTP - thanks @der-On

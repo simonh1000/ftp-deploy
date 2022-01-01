@@ -64,15 +64,15 @@ function canIncludePath(includes, excludes, filePath) {
 }
 
 // A method for parsing the source location and storing the information into a suitably formated object
-function parseLocal(includes, excludes, localRootDir, relDir) {
+function parseLocal(includes, excludes, localRootDir, relDir, collectFilesSize) {
     // reducer
-    let handleItem = function(acc, item) {
+    let handleItem = function (acc, item) {
         const currItem = path.join(fullDir, item);
         const newRelDir = path.relative(localRootDir, currItem);
-
-        if (fs.lstatSync(currItem).isDirectory()) {
+        const stats = fs.lstatSync(currItem);
+        if (stats.isDirectory()) {
             // currItem is a directory. Recurse and attach to accumulator
-            let tmp = parseLocal(includes, excludes, localRootDir, newRelDir);
+            let tmp = parseLocal(includes, excludes, localRootDir, newRelDir, collectFilesSize);
             for (let key in tmp) {
                 if (tmp[key].length == 0) {
                     delete tmp[key];
@@ -84,7 +84,7 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
             // acc[relDir] is always created at previous iteration
             if (canIncludePath(includes, excludes, newRelDir)) {
                 // console.log("including", currItem);
-                acc[relDir].push(item);
+                acc[relDir].push(collectFilesSize ? { name: item, mtime: stats.mtimeMs } : item);
                 return acc;
             }
         }
@@ -107,8 +107,7 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
 }
 
 function countFiles(filemap) {
-    return Object.values(filemap).reduce((acc, item) => acc.concat(item))
-        .length;
+    return Object.values(filemap).reduce((acc, item) => acc.concat(item), []).length;
 }
 
 function deleteDir(ftp, dir) {

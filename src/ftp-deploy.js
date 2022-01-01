@@ -5,10 +5,13 @@ const util = require("util");
 const events = require("events");
 const Promise = require("bluebird");
 const fs = require("fs");
+const os = require("os");
+const memoryStreams = require('memory-streams');
 
 var PromiseFtp = require("promise-ftp");
 var PromiseSftp = require("ssh2-sftp-client");
 const lib = require("./lib");
+const path = require('path');
 
 /* interim structure
 {
@@ -37,6 +40,63 @@ const FtpDeployer = function () {
             return this.makeAndUpload(remoteDir, key, filemap[key]);
         });
     };
+
+
+    this.downloadFilemap = function (remoteRoot) {
+        return new Promise((resolve, reject) => {
+            this.ftp
+                .get(path.join(remoteRoot, ".file-map.json"))
+                .then((stream) => {
+                    var writer = new memoryStreams.WritableStream();
+                    stream.pipe(writer)
+                    stream.on('data', (data) => {
+                        try {
+                            let obj = JSON.parse(writer.toString());                            
+                            resolve(obj?.filemap);
+                        } catch (error) {
+                            console.log("Invalid file-map")
+                            // we will upload everything
+                            resolve();
+                        }
+                    })
+                })
+                .catch((e) => {
+                    // probably file not found we resolve to undefined.
+                    resolve()
+                });
+        });
+
+    }
+
+    this.pruneFilemap = function (localFilemap, remoteFilemap, filemapToUpload) {
+        let filesAlreadyUploaded = 0;
+        let filesToUpload = 0;
+        if (!remoteFilemap) remoteFilemap = {};
+        for (let folder of Object.keys(localFilemap)) {
+            let previousFiles = remoteFilemap[folder] || [];
+            filemapToUpload[folder] = localFilemap[folder].filter(newFile => {
+                let previousFile = previousFiles.filter(previousFile => newFile.name == previousFile.name)[0];
+                let keep = (!previousFile || previousFile.mtime != newFile.mtime);
+                if (keep) filesAlreadyUploaded += 1;
+                else filesToUpload += 1;
+                return keep;
+            }).map(f => f.name);
+        }
+        this.emit("log", "files already uploaded", filesAlreadyUploaded);
+        this.emit("log", "files to upload", filesToUpload);
+    }
+
+    this.uploadFileMap = function (remoteRoot, filemap) {
+        let filemapBuffer = Buffer.from(JSON.stringify({
+            date: new Date(),
+            user: os.userInfo().username,
+            client: os.hostname(),
+            filemap
+        }), "utf-8");
+        return this.ftp
+            .put(filemapBuffer, path.join(remoteRoot, ".file-map.json"));
+    }
+
 
     this.makeDir = function (newDirectory) {
         if (newDirectory === "/") {
@@ -78,7 +138,6 @@ const FtpDeployer = function () {
     // connects to the server, Resolves the config on success
     this.connect = (config) => {
         this.ftp = config.sftp ? new PromiseSftp() : new PromiseFtp();
-
         // sftp client does not provide a connection status
         // so instead provide one ourselfs
         if (config.sftp) {
@@ -124,20 +183,32 @@ const FtpDeployer = function () {
     // creates list of all files to upload and starts upload process
     this.checkLocalAndUpload = (config) => {
         try {
-            let filemap = lib.parseLocal(
+            let localFilemap = lib.parseLocal(
                 config.include,
                 config.exclude,
                 config.localRoot,
-                "/"
+                "/",
+                config.updateNewerFiles
             );
-            // console.log(filemap);
-            this.emit(
-                "log",
-                "Files found to upload: " + JSON.stringify(filemap)
-            );
-            this.eventObject["totalFilesCount"] = lib.countFiles(filemap);
+            let uploadFiles = (filemap) => {
+                // console.log(filemap);
+                this.emit("log",
+                    "Files found to upload: " + JSON.stringify(filemap)
+                );
+                this.eventObject["totalFilesCount"] = lib.countFiles(filemap);
 
-            return this.makeAllAndUpload(config, filemap);
+                return this.makeAllAndUpload(config, filemap);
+                return result;
+            };
+
+            if (config.updateNewerFiles) {
+                let filemapToUpload = {};
+                return this.downloadFilemap(config.remoteRoot)
+                    .then((remoteFilemap) => this.pruneFilemap(localFilemap, remoteFilemap, filemapToUpload))
+                    .then(() => uploadFiles(filemapToUpload))
+                    .then(() => this.uploadFileMap(config.remoteRoot, localFilemap));
+            } else return uploadFiles(localFilemap);
+
         } catch (e) {
             return Promise.reject(e);
         }
@@ -157,7 +228,7 @@ const FtpDeployer = function () {
                     this.emit(
                         "log",
                         "Deleting failed, trying to continue: " +
-                            JSON.stringify(err)
+                        JSON.stringify(err)
                     );
                     return Promise.resolve(config);
                 });
