@@ -1,6 +1,5 @@
 node_modules/
 ignore
-.vscode
 test/remote
 
 playground

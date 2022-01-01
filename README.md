@@ -41,6 +41,7 @@ const config = {
     forcePasv: true,
     // use sftp or ftp
     sftp: false,
+    updateNewerFiles: true // only upload files that have changed
 };
 
 ftpDeploy
@@ -118,4 +119,3 @@ npm test
 ## ToDo
 
 -   re-enable continueOnError
--   update newer files only (PR welcome)
