@@ -45,11 +45,16 @@ const FtpDeployer = function () {
     this.downloadFilemap = function (remoteRoot, filemapName) {
         return new Promise((resolve, reject) => {
             this.ftp
-                .get(path.join(remoteRoot, filemapName))
+                .cwd(remoteRoot)
+                .then(() => this.ftp.get(filemapName))
                 .then((stream) => {
                     var writer = new memoryStreams.WritableStream();
                     stream.pipe(writer)
-                    stream.on('data', (data) => {
+                    stream.on('pause', () => {
+                        // I am not entirely sure while memory stream don't eat this 
+                        stream.resume();
+                    });
+                    stream.on('finish', (data, bcd) => {
                         try {
                             let obj = JSON.parse(writer.toString());
                             resolve(obj?.filemap);
