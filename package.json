@@ -7,7 +7,7 @@
     "scripts": {
         "test": "mocha **/**.spec.js",
         "server": "node test/server.js",
-        "build": "tsc --build --clean",
+        "build": "tsc --build --clean && tsc --build",
         "watch": "tsc --watch"
     },
     "dependencies": {
