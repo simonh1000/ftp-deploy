@@ -3,17 +3,26 @@
     "version": "2.4.3",
     "author": "Simon Hampton",
     "description": "Ftp a folder from your local disk to an ftp destination",
-    "main": "src/ftp-deploy",
+    "main": "build/ftp-deploy",
     "scripts": {
         "test": "mocha **/**.spec.js",
-        "server": "node test/server.js"
+        "server": "node test/server.js",
+        "build": "tsc --build --clean",
+        "watch": "tsc --watch"
     },
     "dependencies": {
+        "@types/bluebird": "^3.5.36",
+        "@types/minimatch": "^3.0.5",
+        "@types/node": "^17.0.27",
+        "@types/promise-ftp": "^1.3.4",
+        "@types/read": "^0.0.29",
+        "@types/ssh2-sftp-client": "^7.0.1",
         "bluebird": "^3.7.2",
         "minimatch": "5.0.1",
         "promise-ftp": "^1.3.5",
         "read": "^1.0.7",
         "ssh2-sftp-client": "^7.2.1",
+        "typescript": "^4.6.3",
         "upath": "^2.0.1"
     },
     "devDependencies": {

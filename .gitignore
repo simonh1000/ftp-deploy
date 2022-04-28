@@ -1,7 +1,7 @@
 node_modules/
 ignore
 .vscode
-test/remote
+test/remote/ftp
 
 playground
 .DS_Store
