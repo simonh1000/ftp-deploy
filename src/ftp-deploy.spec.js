@@ -3,13 +3,11 @@
 const path = require("path");
 const fs = require("fs");
 const utils = require("util");
+const del = require("delete");
 
-const FtpDeploy = require("./ftp-deploy").default;
+const FtpDeploy = require("./ftp-deploy");
 
 const statP = utils.promisify(fs.stat);
-
-const del = require("delete");
-const FtpDeploy = require("./ftp-deploy");
 
 const config = {
     user: "anonymous",
@@ -67,7 +65,7 @@ describe("ftp-deploy.spec: deploy tests", () => {
                 // Should reject if file does not exist
                 return statP(remoteDir + "/test-inside-root.txt");
             })
-            .catch((err) => done(err));
+            .catch((err) => Promise.reject(err));
     });
     it("should put a dot file", () => {
         const d = new FtpDeploy();
