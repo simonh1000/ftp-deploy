@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const utils = require("util");
 
-// var assert = require("assert");
+const FtpDeploy = require("./ftp-deploy").default;
 
 const statP = utils.promisify(fs.stat);
 
