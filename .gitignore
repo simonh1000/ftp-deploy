@@ -2,6 +2,7 @@ node_modules/
 ignore
 .vscode
 test/remote/ftp
+build/
 
 playground
 .DS_Store
