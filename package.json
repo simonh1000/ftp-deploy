@@ -10,7 +10,8 @@
         "tdd": "jest --watch **/**.spec.js",
         "server": "node test/server.js",
         "build": "tsc --build --clean && tsc --build",
-        "watch": "tsc --watch"
+        "watch": "tsc --watch",
+        "prepublish": "npm run build"
     },
     "dependencies": {
         "@types/bluebird": "^3.5.36",
