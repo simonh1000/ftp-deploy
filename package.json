@@ -10,16 +10,16 @@
     },
     "dependencies": {
         "bluebird": "^3.7.2",
-        "minimatch": "3.0.4",
+        "minimatch": "5.0.1",
         "promise-ftp": "^1.3.5",
         "read": "^1.0.7",
         "ssh2-sftp-client": "^5.3.2",
         "upath": "^2.0.1"
     },
     "devDependencies": {
-        "chai": "^4.3.0",
+        "chai": "^4.3.6",
         "delete": "^1.1.0",
-        "ftp-srv": "^4.4.0",
+        "ftp-srv": "^4.6.0",
         "mocha": "^8.2.1"
     },
     "keywords": [
@@ -35,7 +35,7 @@
         "url": "https://github.com/simonh1000/ftp-deploy/issues"
     },
     "engines": {
-        "node": ">=8"
+        "node": ">=10"
     },
     "contributors": [
         {
