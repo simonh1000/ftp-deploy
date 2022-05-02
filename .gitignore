@@ -1,11 +1,21 @@
+# System
+.DS_Store
+
+# Dependencies
 node_modules/
+
+# Editor
 ignore
 .vscode
-test/remote/ftp
-build/
 
+# Test generated
+test/remote/ftp
+coverage
+
+# Developer
 playground
-.DS_Store
 notes.md
 .env
-dist
+
+# Built files
+build
