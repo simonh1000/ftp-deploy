@@ -124,13 +124,13 @@ const FtpDeployer = function () {
     // creates list of all files to upload and starts upload process
     this.checkLocalAndUpload = (config) => {
         try {
-            let filemap = lib.parseLocal(
+            const filemap = lib.parseLocal(
                 config.include,
                 config.exclude,
                 config.localRoot,
                 "/"
             );
-            // console.log(filemap);
+
             this.emit(
                 "log",
                 "Files found to upload: " + JSON.stringify(filemap)
