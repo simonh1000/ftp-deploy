@@ -10,6 +10,37 @@ var PromiseFtp = require("promise-ftp");
 var PromiseSftp = require("ssh2-sftp-client");
 const lib = require("./lib");
 
+// This is a fixed version of the lastMod function to be applied to node-ftp
+// It is applied in the connect function, see the comment containing "node-ftp hack fix"
+// The fix entails adding 'Z' to the date time before creating the Date object, so
+// that the Date object understands that it is being created from a GMT time.
+// A pull request has been sent here: https://github.com/icetee/node-ftp/pull/24
+// that fixes the problem upstream. Remove this hack once the PR is merged.
+const XRegExp = require('xregexp').XRegExp;
+const REX_TIMEVAL = XRegExp.cache('^(?<year>\\d{4})(?<month>\\d{2})(?<date>\\d{2})(?<hour>\\d{2})(?<minute>\\d{2})(?<second>\\d+)(?:.\\d+)?$')                    
+const fixedLastMod= function(path, cb) {
+    var self = this;
+    this._send('MDTM ' + path, function(err, text, code) {
+        if (code === 502) {
+            return self.list(path, function(err, list) {
+                if (err)
+                    return cb(err);
+                if (list.length === 1)
+                    cb(undefined, list[0].date);
+                else
+                    cb(new Error('File not found'));
+            }, true);
+        } else if (err)
+            return cb(err);
+        var val = XRegExp.exec(text, REX_TIMEVAL), ret;
+        if (!val)
+            return cb(new Error('Invalid date/time format from server'));
+        ret = new Date(val.year + '-' + val.month + '-' + val.date + 'T' + val.hour
+                       + ':' + val.minute + ':' + val.second + 'Z');
+        cb(undefined, ret);
+    });
+};
+
 /* interim structure
 {
     '/': ['test-inside-root.txt'],
@@ -30,6 +61,39 @@ const FtpDeployer = function () {
         filename: "",
     };
 
+    // If the file doesn't exist, this function resolves to undefined.
+    this.lastMod = function (path) {
+        if (this.ftp.stat) {
+            return this.ftp
+                .stat(path)
+                .then((stats)=>{
+                    return stats.modifyTime;
+                })
+                .catch((e)=>{
+                    if (e.code=="ENOENT")
+                        return Promise.resolve(undefined);
+
+                    return Promise.reject(e);
+                });
+        }
+
+        else if (this.ftp.lastMod) {
+            return this.ftp
+                .lastMod(path)
+                .catch((e)=>{
+                    // Error code 550 means the file doesn't exist.
+                    if (e.code==550)
+                        return Promise.resolve(undefined);
+
+                    return Promise.reject(e);
+                });
+        }
+
+        else {
+            return Promise.reject(new Error("Unable to check modification time."));
+        }
+    }
+
     this.makeAllAndUpload = function (remoteDir, filemap) {
         let keys = Object.keys(filemap);
         return Promise.mapSeries(keys, (key) => {
@@ -45,6 +109,7 @@ const FtpDeployer = function () {
             return this.ftp.mkdir(newDirectory, true);
         }
     };
+
     // Creates a remote directory and uploads all of the files in it
     // Resolves a confirmation message on success
     this.makeAndUpload = (config, relDir, fnames) => {
@@ -56,11 +121,34 @@ const FtpDeployer = function () {
                 let tmp = fs.readFileSync(tmpFileName);
                 this.eventObject["filename"] = upath.join(relDir, fname);
 
-                this.emit("uploading", this.eventObject);
+                let checkModTime=()=>{
+                    if (!config.newFilesOnly)
+                        return Promise.resolve(true);
 
-                return this.ftp
-                    .put(tmp, upath.join(config.remoteRoot, relDir, fname))
-                    .then(() => {
+                    return this.lastMod(upath.join(config.remoteRoot, relDir, fname))
+                        .then((remoteModDate)=>{
+                            let tmpStats=fs.statSync(tmpFileName);
+                            if (remoteModDate && remoteModDate>=tmpStats.mtime) {
+                                return false;
+                            }
+
+                            return true;
+                        });
+                }
+
+                return checkModTime()
+                    .then((shouldUpload)=>{
+                        if (shouldUpload) {
+                            this.emit("uploading", this.eventObject);
+                            return this.ftp.put(tmp, upath.join(config.remoteRoot, relDir, fname))
+                        }
+
+                        else {
+                            this.emit("skipping", this.eventObject);
+                            return Promise.resolve();
+                        }
+                    })
+                    .then(()=>{
                         this.eventObject.transferredFileCount++;
                         this.emit("uploaded", this.eventObject);
                         return Promise.resolve("uploaded " + tmpFileName);
@@ -92,6 +180,12 @@ const FtpDeployer = function () {
             .then((serverMessage) => {
                 this.emit("log", "Connected to: " + config.host);
                 this.emit("log", "Connected: Server message: " + serverMessage);
+
+                // node-ftp hack fix: apply the fixed function to the
+                // underlying node-ftp instance.
+                if (this.ftp.lastMod) {
+                    this.ftp.rawClient.lastMod = fixedLastMod;
+                }
 
                 // sftp does not provide a connection status
                 // so instead provide one ourself
