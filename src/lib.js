@@ -45,65 +45,83 @@ function getPassword(config) {
 
 // Analysing local firstory
 
+/**
+ * Determines if the `filePath` matches any of the `includes` patterns
+ * and none of the `excludes` patterns.
+ * 
+ * Files beginning with a dot have to be explicitly included.
+ * 
+ * @param {(string|RegExp)[]} includes
+ * @param {(string|RegExp)[]} excludes 
+ * @param {string} filePath 
+ * @returns {boolean}
+ */
 function canIncludePath(includes, excludes, filePath) {
-    let go = (acc, item) =>
-        acc || minimatch(filePath, item, { matchBase: true });
-    let canInclude = includes.reduce(go, false);
+    let canInclude = includes.some(
+        (pattern) => pattern instanceof RegExp
+            ? pattern.test(filePath)
+            : minimatch(filePath, pattern, { matchBase: true })
+    );
 
     // Now check whether the file should in fact be specifically excluded
-    if (canInclude) {
+    if (canInclude && excludes) {
         // if any excludes match return false
-        if (excludes) {
-            let go2 = (acc, item) =>
-                acc && !minimatch(filePath, item, { matchBase: true });
-            canInclude = excludes.reduce(go2, true);
-        }
+        canInclude = excludes.every(
+            (pattern) => pattern instanceof RegExp
+                ? !pattern.test(filePath)
+                // Excluding dot files if they match the pattern implicitly
+                : !minimatch(filePath, pattern, { matchBase: true, dot: true })
+        );
     }
-    // console.log("canIncludePath", include, filePath, res);
+
     return canInclude;
 }
 
-// A method for parsing the source location and storing the information into a suitably formated object
+/**
+ * A method for parsing the source location and storing the
+ * information into a suitably formatted object.
+ * @param {(string|RegExp)[]} includes
+ * @param {(string|RegExp)[]} excludes
+ * @param {string} localRootDir
+ * @param {string} relDir
+ */
 function parseLocal(includes, excludes, localRootDir, relDir) {
-    // reducer
-    let handleItem = function(acc, item) {
+    const fullDir = path.join(localRootDir, relDir);
+    // Check if `fullDir` is a valid location
+    if (!fs.existsSync(fullDir)) {
+        throw new Error(`${fullDir} is not an existing location`);
+    }
+
+    // Iterate through the contents of the `fullDir` of the current iteration
+    const files = fs.readdirSync(fullDir);
+    
+    return files.reduce(function(acc, item) {
         const currItem = path.join(fullDir, item);
         const newRelDir = path.relative(localRootDir, currItem);
 
         if (fs.lstatSync(currItem).isDirectory()) {
             // currItem is a directory. Recurse and attach to accumulator
-            let tmp = parseLocal(includes, excludes, localRootDir, newRelDir);
+            const tmp = parseLocal(includes, excludes, localRootDir, newRelDir);
             for (let key in tmp) {
                 if (tmp[key].length == 0) {
                     delete tmp[key];
                 }
             }
-            return Object.assign(acc, tmp);
+
+            return {
+                ...acc,
+                ...tmp,
+            };
         } else {
             // currItem is a file
             // acc[relDir] is always created at previous iteration
             if (canIncludePath(includes, excludes, newRelDir)) {
-                // console.log("including", currItem);
                 acc[relDir].push(item);
                 return acc;
             }
         }
         return acc;
-    };
-
-    const fullDir = path.join(localRootDir, relDir);
-    // Check if `startDir` is a valid location
-    if (!fs.existsSync(fullDir)) {
-        throw new Error(fullDir + " is not an existing location");
-    }
-
-    // Iterate through the contents of the `fullDir` of the current iteration
-    const files = fs.readdirSync(fullDir);
-    // Add empty array, which may get overwritten by subsequent iterations
-    let acc = {};
-    acc[relDir] = [];
-    const res = files.reduce(handleItem, acc);
-    return res;
+    }, {[relDir]: []});
 }
 
 function countFiles(filemap) {

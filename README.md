@@ -26,13 +26,13 @@ const config = {
     port: 21,
     localRoot: __dirname + "/local-folder",
     remoteRoot: "/public_html/remote-folder/",
+    // include: /.*/,      // this would upload everything
     // include: ["*", "**/*"],      // this would upload everything except dot files
     include: ["*.php", "dist/*", ".*"],
     // e.g. exclude sourcemaps, and ALL files in node_modules (including dot files)
     exclude: [
         "dist/**/*.map",
         "node_modules/**",
-        "node_modules/**/.*",
         ".git/**",
     ],
     // delete ALL existing files at destination before uploading, if true
