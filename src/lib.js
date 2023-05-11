@@ -138,6 +138,7 @@ function deleteDir(ftp, dir, preserve = []) {
             const preserveFile = preserve.find(p => {
                 return p === fname
             });
+            // delete file if not preserved
             if(!preserveFile) {
                 ftp.delete(fname)
             }
