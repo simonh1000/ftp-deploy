@@ -20,11 +20,10 @@ const config = {
     remoteRoot: "/ftp",
     exclude: [],
     include: ["folderA/**/*", "test-inside-root.txt"],
-    preserve: [],
-    debugMode: true
+    debugMode: true,
 };
 
-describe("deploy tests", () => {
+describe("ftp-deploy.spec: deploy tests", () => {
     const remoteDir = path.join(__dirname, "../test/remote/ftp");
 
     it("should fail if badly configured", () => {
@@ -34,7 +33,7 @@ describe("deploy tests", () => {
             .then(() => {
                 return d.deploy(configError);
             })
-            .catch(err => {
+            .catch((err) => {
                 // Should reject if file does not exist
                 if (err.code === "ECONNREFUSED") {
                     return Promise.resolve("got expected error");
@@ -50,7 +49,7 @@ describe("deploy tests", () => {
                 let c2 = Object.assign({}, config, { include: [] });
                 return d.deploy(c2);
             })
-            .catch(err => {
+            .catch((err) => {
                 if (err.code === "NoIncludes") {
                     return Promise.resolve("got expected error");
                 } else {
@@ -68,7 +67,7 @@ describe("deploy tests", () => {
                 // Should reject if file does not exist
                 return statP(remoteDir + "/test-inside-root.txt");
             })
-            .catch(err => done(err));
+            .catch((err) => done(err));
     });
     it("should put a dot file", () => {
         const d = new FtpDeploy();

@@ -57,13 +57,13 @@ describe("dirParseSync", () => {
         const rootDir = path.join(__dirname, "../test/simple");
         assert.deepEqual(lib.parseLocal(["*"], [], rootDir, "/"), {
             "/": ["test-inside-root.txt"],
-            inner: ["test-inside-root.excl"]
+            inner: ["test-inside-root.excl"],
         });
     });
     it("should respect a negate (!)", () => {
         const rootDir = path.join(__dirname, "../test/simple");
         assert.deepEqual(lib.parseLocal(["!*.excl"], [], rootDir, "/"), {
-            "/": ["test-inside-root.txt"]
+            "/": ["test-inside-root.txt"],
         });
     });
     it("should respect excludes (directory)", () => {
@@ -78,27 +78,25 @@ describe("dirParseSync", () => {
             { "/": [] }
         );
     });
-    it("should exclude dot files/dirs", () => {
-        const rootDir = path.join(__dirname, "../test/test2");
-        assert.deepEqual(
-            lib.parseLocal(
-                ["*", "*/**"],
-                ["n_modules/**/*", "n_modules/**/.*"],
-                rootDir,
-                "/"
-            ),
-            { "/": [],  src: [ 'index.js' ] }
-        );
-    });
     it("should traverse test directory", () => {
         const rootDir = path.join(__dirname, "../test/local");
         let exp2 = Object.assign(exp, {
-            "folderA/folderB/FolderC": ["test-inside-c.txt"]
+            "folderA/folderB/FolderC": ["test-inside-c.txt"],
         });
         assert.deepEqual(
             lib.parseLocal(["*"], [".excludeme/**/*"], rootDir, "/"),
             exp2
         );
+    });
+    it("should exclude dot files/dirs", () => {
+        const rootDir = path.join(__dirname, "../test/test2");
+        const res = lib.parseLocal(
+            ["*", "*/**"],
+            ["n_modules/**/*", "n_modules/**/.*"],
+            rootDir,
+            "/"
+        );
+        assert.deepEqual(res, { "/": [], src: ["index.js"] });
     });
 });
 
@@ -108,6 +106,6 @@ let exp = {
     "folderA/folderB": ["test-inside-b.txt"],
     "folderA/folderB/emptyC/folderD": [
         "test-inside-d-1.txt",
-        "test-inside-d-2.txt"
-    ]
+        "test-inside-d-2.txt",
+    ],
 };
