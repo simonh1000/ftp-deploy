@@ -111,21 +111,37 @@ function countFiles(filemap) {
         .length;
 }
 
-function deleteDir(ftp, dir) {
+function deleteDir(ftp, dir, preserve = []) {
     return ftp.list(dir).then(lst => {
+        // console.log(dir, lst.map(l => dir + l.name));
         let dirNames = lst
-            .filter(f => f.type == "d" && f.name != ".." && f.name != ".")
-            .map(f => path.posix.join(dir, f.name));
+          .filter(f => f.type === "d" && f.name !== ".." && f.name !== ".")
+          .map(f => path.posix.join(dir, f.name));
 
         let fnames = lst
-            .filter(f => f.type != "d")
-            .map(f => path.posix.join(dir, f.name));
+          .filter(f => f.type !== "d")
+          .map(f => path.posix.join(dir, f.name));
 
-        // delete sub-directories and then all files
+        // delete subdirectories and then all files
         return Promise.mapSeries(dirNames, dirName => {
-            // deletes everything in sub-directory, and then itself
-            return deleteDir(ftp, dirName).then(() => ftp.rmdir(dirName));
-        }).then(() => Promise.mapSeries(fnames, fname => ftp.delete(fname)));
+            const preserveAllFilesOnDir = preserve.find(p => p === dirName);
+            const preserveDir = preserveAllFilesOnDir || preserve.find(p => p.startsWith(dirName + '/'));
+            // deletes everything in subdirectory if not preserved
+            if(!preserveAllFilesOnDir) {
+                return deleteDir(ftp, dirName, preserve).then(() => {
+                    if(!preserveDir) {
+                        ftp.rmdir(dirName)
+                    }
+                });
+            }
+        }).then(() => Promise.mapSeries(fnames, fname => {
+            const preserveFile = preserve.find(p => {
+                return p === fname
+            });
+            if(!preserveFile) {
+                ftp.delete(fname)
+            }
+        }));
     });
 }
 

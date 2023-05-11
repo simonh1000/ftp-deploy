@@ -147,8 +147,9 @@ const FtpDeployer = function () {
     // Returns config
     this.deleteRemote = (config) => {
         if (config.deleteRemote) {
+            const preserve = config.preserve?.length ? config.preserve.map(p => config.remoteRoot + p) : [];
             return lib
-                .deleteDir(this.ftp, config.remoteRoot)
+                .deleteDir(this.ftp, config.remoteRoot, preserve)
                 .then(() => {
                     this.emit("log", "Deleted directory: " + config.remoteRoot);
                     return config;
