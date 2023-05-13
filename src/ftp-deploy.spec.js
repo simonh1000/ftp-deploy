@@ -57,7 +57,7 @@ describe("ftp-deploy.spec: deploy tests", () => {
                 }
             });
     });
-    it("should put a file", () => {
+    it("should put a file", (done) => {
         const d = new FtpDeploy();
         return del(remoteDir)
             .then(() => {
@@ -69,7 +69,7 @@ describe("ftp-deploy.spec: deploy tests", () => {
             })
             .catch((err) => done(err));
     });
-    it("should put a dot file", () => {
+    it("should put a dot file", (done) => {
         const d = new FtpDeploy();
         return del(remoteDir)
             .then(() => {
@@ -79,6 +79,7 @@ describe("ftp-deploy.spec: deploy tests", () => {
             .then(() => {
                 // Should reject if file does not exist
                 return statP(remoteDir + "/.testfile");
-            });
+            })
+            .catch((err) => done(err));
     });
 });

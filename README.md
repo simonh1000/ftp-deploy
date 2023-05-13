@@ -106,6 +106,7 @@ A script to run a simple ftp server (using [ftp-srv](https://github.com/trs/ftp-
 To use open a console to run the ftp server:
 
 ```
+cd test
 npm run server
 ```
 
