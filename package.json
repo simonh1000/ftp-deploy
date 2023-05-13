@@ -35,7 +35,7 @@
         "url": "https://github.com/simonh1000/ftp-deploy/issues"
     },
     "engines": {
-        "node": ">=10"
+        "node": ">=12"
     },
     "contributors": [
         {
