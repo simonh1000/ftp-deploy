@@ -14,7 +14,7 @@ const FtpDeploy = require("./ftp-deploy");
 const config = {
     user: "anonymous",
     password: "anon", // Optional, prompted if none given
-    host: "localhost",
+    host: "127.0.0.1",
     port: 2121,
     localRoot: path.join(__dirname, "../test/local"),
     remoteRoot: "/ftp",
