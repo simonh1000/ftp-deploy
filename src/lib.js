@@ -6,7 +6,7 @@ const Promise = require("bluebird");
 const read = require("read");
 const readP = util.promisify(read);
 
-const minimatch = require("minimatch");
+const { minimatch } = require("minimatch");
 
 // P H A S E  0
 
@@ -15,7 +15,7 @@ function checkIncludes(config) {
     if (!config.include || !config.include.length) {
         return Promise.reject({
             code: "NoIncludes",
-            message: "You need to specify files to upload - e.g. ['*', '**/*']"
+            message: "You need to specify files to upload - e.g. ['*', '**/*']",
         });
     } else {
         return Promise.resolve(config);
@@ -34,9 +34,9 @@ function getPassword(config) {
                 config.host +
                 " (ENTER for none): ",
             default: "",
-            silent: true
+            silent: true,
         };
-        return readP(options).then(res => {
+        return readP(options).then((res) => {
             let config2 = Object.assign(config, { password: res });
             return config2;
         });
@@ -66,7 +66,7 @@ function canIncludePath(includes, excludes, filePath) {
 // A method for parsing the source location and storing the information into a suitably formated object
 function parseLocal(includes, excludes, localRootDir, relDir) {
     // reducer
-    let handleItem = function(acc, item) {
+    let handleItem = function (acc, item) {
         const currItem = path.join(fullDir, item);
         const newRelDir = path.relative(localRootDir, currItem);
 
@@ -112,26 +112,26 @@ function countFiles(filemap) {
 }
 
 function deleteDir(ftp, dir) {
-    return ftp.list(dir).then(lst => {
+    return ftp.list(dir).then((lst) => {
         let dirNames = lst
-            .filter(f => f.type == "d" && f.name != ".." && f.name != ".")
-            .map(f => path.posix.join(dir, f.name));
+            .filter((f) => f.type == "d" && f.name != ".." && f.name != ".")
+            .map((f) => path.posix.join(dir, f.name));
 
         let fnames = lst
-            .filter(f => f.type != "d")
-            .map(f => path.posix.join(dir, f.name));
+            .filter((f) => f.type != "d")
+            .map((f) => path.posix.join(dir, f.name));
 
         // delete sub-directories and then all files
-        return Promise.mapSeries(dirNames, dirName => {
+        return Promise.mapSeries(dirNames, (dirName) => {
             // deletes everything in sub-directory, and then itself
             return deleteDir(ftp, dirName).then(() => ftp.rmdir(dirName));
-        }).then(() => Promise.mapSeries(fnames, fname => ftp.delete(fname)));
+        }).then(() => Promise.mapSeries(fnames, (fname) => ftp.delete(fname)));
     });
 }
 
 mkDirExists = (ftp, dir) => {
     // Make the directory using recursive expand
-    return ftp.mkdir(dir, true).catch(err => {
+    return ftp.mkdir(dir, true).catch((err) => {
         if (err.message.startsWith("EEXIST")) {
             return Promise.resolve();
         } else {
@@ -149,5 +149,5 @@ module.exports = {
     canIncludePath: canIncludePath,
     countFiles: countFiles,
     mkDirExists: mkDirExists,
-    deleteDir: deleteDir
+    deleteDir: deleteDir,
 };
