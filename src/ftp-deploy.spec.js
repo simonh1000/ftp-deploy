@@ -1,4 +1,5 @@
 "use strict";
+// Mocha tests. https://mochajs.org/#working-with-promises
 
 const path = require("path");
 const fs = require("fs");
@@ -10,6 +11,7 @@ const statP = utils.promisify(fs.stat);
 
 const del = require("delete");
 const FtpDeploy = require("./ftp-deploy");
+const { assert } = require("console");
 
 const config = {
     user: "anonymous",
@@ -57,7 +59,7 @@ describe("ftp-deploy.spec: deploy tests", () => {
                 }
             });
     });
-    it("should put a file", (done) => {
+    it("should put a file", () => {
         const d = new FtpDeploy();
         return del(remoteDir)
             .then(() => {
@@ -65,11 +67,15 @@ describe("ftp-deploy.spec: deploy tests", () => {
             })
             .then(() => {
                 // Should reject if file does not exist
-                return statP(remoteDir + "/test-inside-root.txt");
-            })
-            .catch((err) => done(new Error(JSON.stringify(err))));
+                return statP(remoteDir + "/test-inside-root.txt").catch(
+                    (err) => {
+                        console.log("caught", err);
+                        return Promise.reject(err);
+                    }
+                );
+            });
     });
-    it("should put a dot file", (done) => {
+    it("should put a dot file", () => {
         const d = new FtpDeploy();
         return del(remoteDir)
             .then(() => {
@@ -79,7 +85,6 @@ describe("ftp-deploy.spec: deploy tests", () => {
             .then(() => {
                 // Should reject if file does not exist
                 return statP(remoteDir + "/.testfile");
-            })
-            .catch((err) => done(new Error(JSON.stringify(err))));
+            });
     });
 });
