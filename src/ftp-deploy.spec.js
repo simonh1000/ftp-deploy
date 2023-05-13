@@ -67,7 +67,7 @@ describe("ftp-deploy.spec: deploy tests", () => {
                 // Should reject if file does not exist
                 return statP(remoteDir + "/test-inside-root.txt");
             })
-            .catch((err) => done(err));
+            .catch((err) => done(new Error(JSON.stringify(err))));
     });
     it("should put a dot file", (done) => {
         const d = new FtpDeploy();
@@ -80,6 +80,6 @@ describe("ftp-deploy.spec: deploy tests", () => {
                 // Should reject if file does not exist
                 return statP(remoteDir + "/.testfile");
             })
-            .catch((err) => done(err));
+            .catch((err) => done(new Error(JSON.stringify(err))));
     });
 });
