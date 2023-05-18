@@ -15,10 +15,10 @@ npm install --save-dev ftp-deploy
 The most basic usage:
 
 ```js
-var FtpDeploy = require("ftp-deploy");
-var ftpDeploy = new FtpDeploy();
+const FtpDeploy = require("ftp-deploy");
+const ftpDeploy = new FtpDeploy();
 
-var config = {
+const config = {
     user: "user",
     // Password optional, prompted if none given
     password: "password",
@@ -34,24 +34,24 @@ var config = {
         "dist/**/*.map",
         "node_modules/**",
         "node_modules/**/.*",
-        ".git/**"
+        ".git/**",
     ],
     // if true, delete ALL existing files (expcet dot files) at destination before uploading
     deleteRemote: false,
     // if true, only uploads changed files (based on last modified date and file size)
     newFilesOnly: false,
     // Passive mode is forced (EPSV command is not sent)
-    forcePasv: true
+    forcePasv: true,
 };
 
 // use with promises
 ftpDeploy
     .deploy(config)
-    .then(res => console.log("finished:", res))
-    .catch(err => console.log(err));
+    .then((res) => console.log("finished:", res))
+    .catch((err) => console.log(err));
 
 // use with callback
-ftpDeploy.deploy(config, function(err, res) {
+ftpDeploy.deploy(config, function (err, res) {
     if (err) console.log(err);
     else console.log("finished:", res);
 });
@@ -81,18 +81,18 @@ These are lists of [minimatch globs](https://github.com/isaacs/minimatch). ftp-d
 ftp-deploy reports progress using events. These can be accessed - if desired - by registering listeners for "uploading", "uploaded", "upload-error" and "log":
 
 ```js
-ftpDeploy.on("uploading", function(data) {
+ftpDeploy.on("uploading", function (data) {
     console.log(data.totalFilesCount); // total file count being transferred
     console.log(data.transferredFileCount); // number of files transferred
     console.log(data.filename); // partial path with filename being uploaded
 });
-ftpDeploy.on("uploaded", function(data) {
+ftpDeploy.on("uploaded", function (data) {
     console.log(data); // same data as uploading event
 });
-ftpDeploy.on("upload-error", function(data) {
+ftpDeploy.on("upload-error", function (data) {
     console.log(data.err); // data will also include filename, relativePath, and other goodies
 });
-ftpDeploy.on("log", function(data) {
+ftpDeploy.on("log", function (data) {
     console.log(data); // same data as uploading event
 });
 ```

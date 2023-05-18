@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.5.0
+
+    - Switch to ES5 Class
+
 ## 2.4.0
 
     - Add support for SFTP - thanks @der-On
