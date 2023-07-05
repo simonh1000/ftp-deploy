@@ -83,8 +83,8 @@ const FtpDeployer = function () {
         // so instead provide one ourselfs
         if (config.sftp) {
             this.connectionStatus = "disconnected";
-            this.ftp.on("end", this.handleDisconnect);
-            this.ftp.on("close", this.handleDisconnect);
+            this.ftp.once("end", this.handleDisconnect);
+            this.ftp.once("close", this.handleDisconnect);
         }
 
         return this.ftp
