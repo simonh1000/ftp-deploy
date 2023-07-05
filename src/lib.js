@@ -6,7 +6,7 @@ const Promise = require("bluebird");
 const read = require("read");
 const readP = util.promisify(read);
 
-const minimatch = require("minimatch");
+const { minimatch } = require("minimatch");
 
 // P H A S E  0
 
@@ -15,7 +15,7 @@ function checkIncludes(config) {
     if (!config.include || !config.include.length) {
         return Promise.reject({
             code: "NoIncludes",
-            message: "You need to specify files to upload - e.g. ['*', '**/*']"
+            message: "You need to specify files to upload - e.g. ['*', '**/*']",
         });
     } else {
         return Promise.resolve(config);
@@ -34,9 +34,9 @@ function getPassword(config) {
                 config.host +
                 " (ENTER for none): ",
             default: "",
-            silent: true
+            silent: true,
         };
-        return readP(options).then(res => {
+        return readP(options).then((res) => {
             let config2 = Object.assign(config, { password: res });
             return config2;
         });
@@ -66,7 +66,7 @@ function canIncludePath(includes, excludes, filePath) {
 // A method for parsing the source location and storing the information into a suitably formated object
 function parseLocal(includes, excludes, localRootDir, relDir) {
     // reducer
-    let handleItem = function(acc, item) {
+    let handleItem = function (acc, item) {
         const currItem = path.join(fullDir, item);
         const newRelDir = path.relative(localRootDir, currItem);
 
@@ -148,7 +148,7 @@ function deleteDir(ftp, dir, preserve = []) {
 
 mkDirExists = (ftp, dir) => {
     // Make the directory using recursive expand
-    return ftp.mkdir(dir, true).catch(err => {
+    return ftp.mkdir(dir, true).catch((err) => {
         if (err.message.startsWith("EEXIST")) {
             return Promise.resolve();
         } else {
@@ -166,5 +166,5 @@ module.exports = {
     canIncludePath: canIncludePath,
     countFiles: countFiles,
     mkDirExists: mkDirExists,
-    deleteDir: deleteDir
+    deleteDir: deleteDir,
 };
