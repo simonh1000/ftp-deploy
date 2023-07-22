@@ -129,7 +129,7 @@ function deleteDir(ftp, dir) {
     });
 }
 
-mkDirExists = (ftp, dir) => {
+function mkDirExists(ftp, dir) {
     // Make the directory using recursive expand
     return ftp.mkdir(dir, true).catch((err) => {
         if (err.message.startsWith("EEXIST")) {
