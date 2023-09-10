@@ -5,13 +5,10 @@ const path = require("upath");
 const fs = require("fs");
 const utils = require("util");
 
-// var assert = require("assert");
-
 const statP = utils.promisify(fs.stat);
 
 const del = require("delete");
 const FtpDeploy = require("./ftp-deploy");
-const { assert } = require("console");
 
 const config = {
     user: "anonymous",
