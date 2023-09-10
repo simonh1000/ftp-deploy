@@ -1,11 +1,11 @@
 "use strict";
 
-const path = require("path");
+const path = require("upath");
 var assert = require("assert");
 
 const expect = require("chai").expect;
 
-const lib = require("../src/lib");
+const lib = require("./lib");
 
 describe("canIncludePath", () => {
     it("no patterns excludes a fila", () => {
@@ -81,7 +81,7 @@ describe("dirParseSync", () => {
     it("should traverse test directory", () => {
         const rootDir = path.join(__dirname, "../test/local");
         let exp2 = Object.assign(exp, {
-            "folderA/folderB/FolderC": ["test-inside-c.txt"],
+            [path.join("folderA/folderB/FolderC")]: ["test-inside-c.txt"],
         });
         assert.deepEqual(
             lib.parseLocal(["*"], [".excludeme/**/*"], rootDir, "/"),
@@ -103,8 +103,8 @@ describe("dirParseSync", () => {
 let exp = {
     "/": ["test-inside-root.txt"],
     folderA: ["test-inside-a.txt"],
-    "folderA/folderB": ["test-inside-b.txt"],
-    "folderA/folderB/emptyC/folderD": [
+    [path.join("folderA/folderB")]: ["test-inside-b.txt"],
+    [path.join("folderA/folderB/emptyC/folderD")]: [
         "test-inside-d-1.txt",
         "test-inside-d-2.txt",
     ],
