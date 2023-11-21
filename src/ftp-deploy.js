@@ -64,9 +64,21 @@ const FtpDeployer = function () {
     // Resolves a confirmation message on success
     this.makeAndUpload = (config, relDir, fnames) => {
         let newDirectory = upath.join(config.remoteRoot, relDir);
-        return this.makeDir(newDirectory, true).then(() => {
+        return this.makeDir(newDirectory).then(() => {
             // console.log("newDirectory", newDirectory);
-            return Promise.mapSeries(fnames, (fname) => {
+            const parallelUploads = config.parallelUploads || 1
+
+            // split file list into chunks of configured size
+            const chunks = fnames.reduce((result, current, index) => {
+              const position   = Math.floor(index / parallelUploads)
+              result[position] = [].concat(result[position] || [], current)
+              return result
+            }, [])
+
+            // iterate every chunk in serie
+            return Promise.mapSeries(chunks, chunk =>
+              // iterate every element of the chunk in parallel
+              Promise.map(chunk, (fname) => {
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
                 let tmp = fs.readFileSync(tmpFileName);
                 this.eventObject["filename"] = upath.join(relDir, fname);
@@ -86,7 +98,10 @@ const FtpDeployer = function () {
                         // if continue on error....
                         return Promise.reject(err);
                     });
-            });
+              })
+            )
+            // flatten the result to return only a list of files
+            .then(result => result.flat());
         });
     };
 
