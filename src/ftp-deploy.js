@@ -30,12 +30,27 @@ const FtpDeployer = function () {
         filename: "",
     };
 
-    this.makeAllAndUpload = function (remoteDir, filemap) {
-        let keys = Object.keys(filemap);
-        return Promise.mapSeries(keys, (key) => {
-            // console.log("Processing", key, filemap[key]);
-            return this.makeAndUpload(remoteDir, key, filemap[key]);
+    this.makeAllAndUpload = function (config, filemap) {
+
+        let folders = Object.keys(filemap)
+        .map(key => {
+          return upath.join(config.remoteRoot, key)
         });
+
+        let files   = Object.keys(filemap)
+        .map(key => {
+          return filemap[key].map(file => {
+            if (key === "/") return file
+            return upath.join(key, file)
+          })
+        })
+        .flat();
+
+        // create all the dirs
+        return Promise.mapSeries(folders, folder => {
+          return this.makeDir(folder)
+        })
+        .then(() => this.makeAndUpload(config, "/", files))
     };
 
     this.makeDir = function (newDirectory) {
