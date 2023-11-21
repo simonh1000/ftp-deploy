@@ -26,16 +26,30 @@ const FtpDeployer = function () {
     this.ftp = null;
     this.eventObject = {
         totalFilesCount: 0,
-        transferredFileCount: 0,
-        filename: "",
+        transferredFileCount: 0
     };
 
-    this.makeAllAndUpload = function (remoteDir, filemap) {
-        let keys = Object.keys(filemap);
-        return Promise.mapSeries(keys, (key) => {
-            // console.log("Processing", key, filemap[key]);
-            return this.makeAndUpload(remoteDir, key, filemap[key]);
+    this.makeAllAndUpload = function (config, filemap) {
+
+        let folders = Object.keys(filemap)
+        .map(key => {
+          return upath.join(config.remoteRoot, key)
         });
+
+        let files   = Object.keys(filemap)
+        .map(key => {
+          return filemap[key].map(file => {
+            if (key === "/") return file
+            return upath.join(key, file)
+          })
+        })
+        .flat();
+
+        // create all the dirs
+        return Promise.mapSeries(folders, folder => {
+          return this.makeDir(folder)
+        })
+        .then(() => this.makeAndUpload(config, "/", files))
     };
 
     this.makeDir = function (newDirectory) {
@@ -49,29 +63,46 @@ const FtpDeployer = function () {
     // Resolves a confirmation message on success
     this.makeAndUpload = (config, relDir, fnames) => {
         let newDirectory = upath.join(config.remoteRoot, relDir);
-        return this.makeDir(newDirectory, true).then(() => {
+        return this.makeDir(newDirectory).then(() => {
             // console.log("newDirectory", newDirectory);
-            return Promise.mapSeries(fnames, (fname) => {
+
+            // get the configured parallelUpload param, default to 1
+            const parallelUploads = config.parallelUploads || 1
+
+            // split file list into chunks of configured size
+            const chunks = fnames.reduce((result, current, index) => {
+              const position   = Math.floor(index / parallelUploads)
+              result[position] = [].concat(result[position] || [], current)
+              return result
+            }, [])
+
+            // iterate every chunk in serie
+            return Promise.mapSeries(chunks, chunk =>
+              // iterate every element of the chunk in parallel
+              Promise.map(chunk, (fname) => {
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
                 let tmp = fs.readFileSync(tmpFileName);
-                this.eventObject["filename"] = upath.join(relDir, fname);
+                const filename = upath.join(relDir, fname);
 
-                this.emit("uploading", this.eventObject);
+                this.emit("uploading", Object.assign({ filename }, this.eventObject));
 
                 return this.ftp
                     .put(tmp, upath.join(config.remoteRoot, relDir, fname))
                     .then(() => {
                         this.eventObject.transferredFileCount++;
-                        this.emit("uploaded", this.eventObject);
+                        this.emit("uploaded", Object.assign({ filename }, this.eventObject));
                         return Promise.resolve("uploaded " + tmpFileName);
                     })
                     .catch((err) => {
-                        this.eventObject["error"] = err;
-                        this.emit("upload-error", this.eventObject);
+                        let error = err;
+                        this.emit("upload-error", Object.assign({ filename, error }, this.eventObject));
                         // if continue on error....
                         return Promise.reject(err);
                     });
-            });
+              })
+            )
+            // flatten the result to return only a list of files
+            .then(result => result.flat());
         });
     };
 
