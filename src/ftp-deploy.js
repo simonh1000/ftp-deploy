@@ -26,8 +26,7 @@ const FtpDeployer = function () {
     this.ftp = null;
     this.eventObject = {
         totalFilesCount: 0,
-        transferredFileCount: 0,
-        filename: "",
+        transferredFileCount: 0
     };
 
     this.makeAllAndUpload = function (config, filemap) {
@@ -66,6 +65,8 @@ const FtpDeployer = function () {
         let newDirectory = upath.join(config.remoteRoot, relDir);
         return this.makeDir(newDirectory).then(() => {
             // console.log("newDirectory", newDirectory);
+
+            // get the configured parallelUpload param, default to 1
             const parallelUploads = config.parallelUploads || 1
 
             // split file list into chunks of configured size
@@ -81,20 +82,20 @@ const FtpDeployer = function () {
               Promise.map(chunk, (fname) => {
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
                 let tmp = fs.readFileSync(tmpFileName);
-                this.eventObject["filename"] = upath.join(relDir, fname);
+                const filename = upath.join(relDir, fname);
 
-                this.emit("uploading", this.eventObject);
+                this.emit("uploading", Object.assign({ filename }, this.eventObject));
 
                 return this.ftp
                     .put(tmp, upath.join(config.remoteRoot, relDir, fname))
                     .then(() => {
                         this.eventObject.transferredFileCount++;
-                        this.emit("uploaded", this.eventObject);
+                        this.emit("uploaded", Object.assign({ filename }, this.eventObject));
                         return Promise.resolve("uploaded " + tmpFileName);
                     })
                     .catch((err) => {
-                        this.eventObject["error"] = err;
-                        this.emit("upload-error", this.eventObject);
+                        let error = err;
+                        this.emit("upload-error", Object.assign({ filename, error }, this.eventObject));
                         // if continue on error....
                         return Promise.reject(err);
                     });
