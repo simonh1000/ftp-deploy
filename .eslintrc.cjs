@@ -3,7 +3,7 @@ module.exports = {
     extends: ['eslint:recommended', 'prettier'],
     root: true,
     parserOptions: {
-        "ecmaVersion": "2017"
+        "ecmaVersion": "2020"
     },
     env: {
         node: true,
