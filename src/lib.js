@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 const util = require("util");
-const Promise = require("bluebird");
 
 const read = require("read");
 const readP = util.promisify(read);
@@ -123,7 +122,7 @@ function deleteDir(ftp, dir, preserve = []) {
           .map(f => path.posix.join(dir, f.name));
 
         // delete subdirectories and then all files
-        return Promise.mapSeries(dirNames, dirName => {
+        return mapSeries(dirNames, dirName => {
             const preserveAllFilesOnDir = preserve.find(p => p === dirName);
             const preserveDir = preserveAllFilesOnDir || preserve.find(p => p.startsWith(dirName + '/'));
             // deletes everything in subdirectory if not preserved
@@ -134,7 +133,7 @@ function deleteDir(ftp, dir, preserve = []) {
                     }
                 });
             }
-        }).then(() => Promise.mapSeries(fnames, fname => {
+        }).then(() => mapSeries(fnames, fname => {
             const preserveFile = preserve.find(p => {
                 return p === fname
             });
@@ -159,6 +158,33 @@ mkDirExists = (ftp, dir) => {
     });
 };
 
+/**
+ * Applies the mapper function to each item in the array in series.
+ * @param {Array} array - The array to map over.
+ * @param {Function} mapper - The mapping function.
+ * @returns {Promise<Array>} A promise that resolves with the new array.
+ */
+function mapSeries(array, mapper) {
+    // Initialize a resolved Promise
+    let result = Promise.resolve();
+    // Empty array to store the results
+    const output = [];
+
+    array.forEach((item, index) => {
+        // Chain a new Promise to the result
+        result = result.then(() => {
+            // Apply the mapper function to the current item
+            return mapper(item, index, array)
+                .then(res => {
+                    output.push(res);
+                });
+        });
+    });
+
+    // Return a Promise that resolves with the output array
+    return result.then(() => output);
+}
+
 module.exports = {
     checkIncludes: checkIncludes,
     getPassword: getPassword,
@@ -167,4 +193,5 @@ module.exports = {
     countFiles: countFiles,
     mkDirExists: mkDirExists,
     deleteDir: deleteDir,
+    mapSeries: mapSeries,
 };
