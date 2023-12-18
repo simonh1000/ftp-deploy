@@ -75,7 +75,7 @@ ftpDeploy.deploy(config, function (err, res) {
 
 ## Configuration include and exclude
 
-These are lists of [minimatch globs](https://github.com/isaacs/minimatch). ftp-deploy works by checking for each file in your sourece directory, whether it is included by one of the include patterns and whether it is NOT excluded by one of the exclude patterns. In other words:
+These are lists of [minimatch globs](https://github.com/isaacs/minimatch). ftp-deploy works by checking for each file in your source directory, whether it is included by one of the include patterns and whether it is NOT excluded by one of the exclude patterns. In other words:
 
 -   `include`: all files that match will be uploaded. **Note** that a `[ ]` matches nothing
 -   `exclude`: if a file matches the include pattern a subset may nonetheless be excluded
