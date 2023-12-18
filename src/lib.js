@@ -11,7 +11,7 @@ const { minimatch } = require("minimatch");
 // P H A S E  0
 
 function checkIncludes(config) {
-    config.excludes = config.excludes || [];
+    config.exclude = config.exclude || [];
     if (!config.include || !config.include.length) {
         return Promise.reject({
             code: "NoIncludes",
