@@ -4,13 +4,13 @@ const FtpSrv = require("ftp-srv");
 const port = 2121;
 const homeDir =
     require("os").homedir() + "/code/projects/ftp-deploy/test/remote";
-console.log("serving", homeDir);
+// console.log("serving", homeDir);
 
 const options = {
-    greeting: ["test ftp server", homeDir],
-    anonymous: true,
-    pasv_url: "127.0.0.1",
     url: "ftp://127.0.0.1:" + port,
+    anonymous: true,
+    greeting: ["test ftp server", homeDir],
+    pasv_url: "127.0.0.1",
 };
 
 const ftpServer = new FtpSrv(options);
