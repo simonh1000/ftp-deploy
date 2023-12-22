@@ -7,7 +7,7 @@ const Promise = require("bluebird");
 const fs = require("fs");
 
 var PromiseFtp = require("promise-ftp");
-var PromiseSftp = require("ssh2-sftp-client");
+var sftpClient = require("ssh2-sftp-client");
 const lib = require("./lib");
 
 /* interim structure
@@ -53,20 +53,22 @@ const FtpDeployer = function () {
             // console.log("newDirectory", newDirectory);
             return Promise.mapSeries(fnames, (fname) => {
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
-                let tmp = fs.readFileSync(tmpFileName);
+                let fileContents = fs.readFileSync(tmpFileName);
                 this.eventObject["filename"] = upath.join(relDir, fname);
 
                 this.emit("uploading", this.eventObject);
+                const putPath = upath.join(config.remoteRoot, relDir, fname);
+                console.log({ putPath });
 
                 return this.ftp
-                    .put(tmp, upath.join(config.remoteRoot, relDir, fname))
+                    .put(fileContents, putPath)
                     .then(() => {
                         this.eventObject.transferredFileCount++;
                         this.emit("uploaded", this.eventObject);
                         return Promise.resolve("uploaded " + tmpFileName);
                     })
                     .catch((err) => {
-                        this.eventObject["error"] = err;
+                        this.eventObject["error"] = err.message;
                         this.emit("upload-error", this.eventObject);
                         // if continue on error....
                         return Promise.reject(err);
@@ -77,7 +79,7 @@ const FtpDeployer = function () {
 
     // connects to the server, Resolves the config on success
     this.connect = (config) => {
-        this.ftp = config.sftp ? new PromiseSftp() : new PromiseFtp();
+        this.ftp = config.sftp ? new sftpClient() : new PromiseFtp();
 
         // sftp client does not provide a connection status
         // so instead provide one ourselfs
@@ -90,8 +92,15 @@ const FtpDeployer = function () {
         return this.ftp
             .connect(config)
             .then((serverMessage) => {
+                // no param for sftp!
                 this.emit("log", "Connected to: " + config.host);
-                this.emit("log", "Connected: Server message: " + serverMessage);
+                if (!config.sftp) {
+                    // we do have a server message for non-sftp
+                    this.emit(
+                        "log",
+                        "Connected: Server message: " + serverMessage
+                    );
+                }
 
                 // sftp does not provide a connection status
                 // so instead provide one ourself
