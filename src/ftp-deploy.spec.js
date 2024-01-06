@@ -30,7 +30,7 @@ describe("ftp-deploy.spec: deploy tests", () => {
 
     it("should fail if badly configured", () => {
         const d = new FtpDeploy();
-        const configError = Object.assign({}, config, { port: 212 });
+        const configError = { ...config, port: 212 };
         return del(remoteDir)
             .then(() => {
                 return d.deploy(configError);
@@ -48,7 +48,7 @@ describe("ftp-deploy.spec: deploy tests", () => {
         const d = new FtpDeploy();
         return del(remoteDir)
             .then(() => {
-                let c2 = Object.assign({}, config, { include: [] });
+                let c2 = { ...config, include: [] };
                 return d.deploy(c2);
             })
             .catch((err) => {
