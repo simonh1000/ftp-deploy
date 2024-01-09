@@ -1,16 +1,16 @@
-const fs = require("fs");
-const path = require("path");
-const util = require("util");
-const Promise = require("bluebird");
+import fs from "fs";
+import path from "path";
+import util from "util";
+import Promise from "bluebird";
+import read from "read";
+import { minimatch } from "minimatch";
+import { FileMap, Ftp, FtpDeployConfig } from "./types";
 
-const read = require("read");
 const readP = util.promisify(read);
-
-const { minimatch } = require("minimatch");
 
 // P H A S E  0
 
-function checkIncludes(config) {
+function checkIncludes(config: FtpDeployConfig) {
     config.exclude = config.exclude || [];
     if (!config.include || !config.include.length) {
         return Promise.reject({
@@ -22,7 +22,7 @@ function checkIncludes(config) {
     }
 }
 
-function getPassword(config) {
+function getPassword(config: FtpDeployConfig) {
     if (config.password) {
         return Promise.resolve(config);
     } else {
@@ -45,8 +45,12 @@ function getPassword(config) {
 
 // Analysing local firstory
 
-function canIncludePath(includes, excludes, filePath) {
-    let go = (acc, item) =>
+function canIncludePath(
+    includes: string[],
+    excludes: string[],
+    filePath: string
+) {
+    let go = (acc: boolean, item: string) =>
         acc || minimatch(filePath, item, { matchBase: true });
     let canInclude = includes.reduce(go, false);
 
@@ -54,19 +58,24 @@ function canIncludePath(includes, excludes, filePath) {
     if (canInclude) {
         // if any excludes match return false
         if (excludes) {
-            let go2 = (acc, item) =>
+            let go2 = (acc: boolean, item: string) =>
                 acc && !minimatch(filePath, item, { matchBase: true });
             canInclude = excludes.reduce(go2, true);
         }
     }
-    // console.log("canIncludePath", include, filePath, res);
+
     return canInclude;
 }
 
 // A method for parsing the source location and storing the information into a suitably formated object
-function parseLocal(includes, excludes, localRootDir, relDir) {
+function parseLocal(
+    includes: string[],
+    excludes: string[],
+    localRootDir: string,
+    relDir: string
+) {
     // reducer
-    let handleItem = function (acc, item) {
+    const handleItem = function (acc: FileMap, item: string) {
         const currItem = path.join(fullDir, item);
         const newRelDir = path.relative(localRootDir, currItem);
 
@@ -78,7 +87,8 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
                     delete tmp[key];
                 }
             }
-            return Object.assign(acc, tmp);
+            const newAcc: FileMap = Object.assign(acc, tmp);
+            return newAcc;
         } else {
             // currItem is a file
             // acc[relDir] is always created at previous iteration
@@ -100,18 +110,18 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
     // Iterate through the contents of the `fullDir` of the current iteration
     const files = fs.readdirSync(fullDir);
     // Add empty array, which may get overwritten by subsequent iterations
-    let acc = {};
+    let acc: FileMap = {};
     acc[relDir] = [];
     const res = files.reduce(handleItem, acc);
     return res;
 }
 
-function countFiles(filemap) {
+function countFiles(filemap: FileMap) {
     return Object.values(filemap).reduce((acc, item) => acc.concat(item))
         .length;
 }
 
-function deleteDir(ftp, dir) {
+function deleteDir(ftp: Ftp, dir: string) {
     return ftp.list(dir).then((lst) => {
         let dirNames = lst
             .filter((f) => f.type == "d" && f.name != ".." && f.name != ".")
@@ -129,7 +139,7 @@ function deleteDir(ftp, dir) {
     });
 }
 
-mkDirExists = (ftp, dir) => {
+function mkDirExists(ftp: Ftp, dir: string) {
     // Make the directory using recursive expand
     return ftp.mkdir(dir, true).catch((err) => {
         if (err.message.startsWith("EEXIST")) {
@@ -140,7 +150,7 @@ mkDirExists = (ftp, dir) => {
             return Promise.reject(err);
         }
     });
-};
+}
 
 module.exports = {
     checkIncludes: checkIncludes,
