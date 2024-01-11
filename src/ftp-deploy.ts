@@ -6,7 +6,9 @@ import PromiseSftp from "ssh2-sftp-client";
 import Promise from "bluebird";
 
 import lib from "./lib";
-import { FileMap, Ftp, FtpDeployConfig } from "./types";
+import { EventObject, FileMap, Ftp, FtpDeployConfig } from "./types";
+
+export * from "./types";
 
 /* interim structure
 {
@@ -21,12 +23,7 @@ import { FileMap, Ftp, FtpDeployConfig } from "./types";
 class FtpDeployer extends events.EventEmitter {
     connectionStatus: undefined | "disconnected" | "connected";
     ftp: Ftp | null;
-    eventObject: {
-        totalFilesCount: number;
-        transferredFileCount: number;
-        filename: string;
-        error?: Error;
-    };
+    eventObject: EventObject;
 
     // The constructor for the super class.
     // TODO: Add config: FtpDeployConfig as an argument to prevent future null checks on this.ftp
@@ -158,7 +155,7 @@ class FtpDeployer extends events.EventEmitter {
         try {
             let filemap = lib.parseLocal(
                 config.include,
-                config.exclude,
+                config.exclude ?? [],
                 config.localRoot,
                 "/"
             );
@@ -232,4 +229,4 @@ class FtpDeployer extends events.EventEmitter {
     }
 }
 
-module.exports = FtpDeployer;
+export default FtpDeployer;
