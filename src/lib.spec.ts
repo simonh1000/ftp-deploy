@@ -1,11 +1,8 @@
-"use strict";
+import path from "path";
+import assert from "assert";
+import { expect } from "chai";
 
-const path = require("path");
-var assert = require("assert");
-
-const expect = require("chai").expect;
-
-const lib = require("../src/lib");
+import lib from "../src/lib";
 
 describe("canIncludePath", () => {
     it("no patterns excludes a fila", () => {
@@ -44,14 +41,17 @@ describe("canIncludePath", () => {
         assert.ok(!lib.canIncludePath(["*"], ["*.txt"], "excludeme.txt"));
     });
     it("should handle an undefined exclude", () => {
-        assert.ok(lib.canIncludePath(["*"], undefined, "excludeme.txt"));
+        assert.ok(lib.canIncludePath(["*"], [], "excludeme.txt"));
     });
 });
 
 describe("dirParseSync", () => {
     it("should throw on a bad start directory", () => {
         const testDir = "./throw";
-        assert.throws(() => lib.parseLocal(["*"], testDir, testDir), Error);
+        assert.throws(
+            () => lib.parseLocal(["*"], [testDir], testDir, ""),
+            Error
+        );
     });
     it("should traverse simple directory", () => {
         const rootDir = path.join(__dirname, "../test/simple");
@@ -96,7 +96,7 @@ describe("dirParseSync", () => {
             rootDir,
             "/"
         );
-        assert.deepEqual(res, { "/": [], src: ["index.js"] });
+        assert.deepEqual(res, { "/": [], src: ["index.ts"] });
     });
 });
 

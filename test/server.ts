@@ -1,4 +1,4 @@
-const FtpSrv = require("ftp-srv");
+import FtpSrv from "ftp-srv";
 
 // Using non-standard port
 const port = 2121;
@@ -27,13 +27,8 @@ ftpServer.on("client-error", ({ connection, context, error }) => {
     console.log(error);
 });
 
-ftpServer.on("error", (err) => {
-    console.log("**error**");
-    console.log(err);
-});
-
-ftpServer.on("uncaughtException", (err) => {
-    console.log("**uncaughtException**");
+ftpServer.on("disconnect", (err) => {
+    console.log("**disconnect**");
     console.log(err);
 });
 
@@ -42,6 +37,6 @@ ftpServer
     .then(() => {
         console.log(`Serving ${homeDir} on port: ${port}`);
     })
-    .catch((err) => {
+    .catch((err: Error) => {
         console.log("[error]", err);
     });

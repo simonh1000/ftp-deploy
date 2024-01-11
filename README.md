@@ -116,6 +116,14 @@ and then in another console run the tests:
 npm test
 ```
 
+## Building
+
+To compile the typescript, run:
+
+```
+npm run build
+```
+
 ## ToDo
 
 -   re-enable continueOnError

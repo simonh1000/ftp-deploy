@@ -31,7 +31,7 @@ class FtpDeployer extends events.EventEmitter {
         super();
 
         // TODO: remove if redundant to super()
-        events.EventEmitter.call(this);
+        // events.EventEmitter.call(this);
         this.ftp = null;
         this.eventObject = {
             totalFilesCount: 0,
@@ -41,14 +41,17 @@ class FtpDeployer extends events.EventEmitter {
         };
     }
 
-    private makeAllAndUpload(remoteDir: FtpDeployConfig, filemap: FileMap) {
+    private makeAllAndUpload = (
+        remoteDir: FtpDeployConfig,
+        filemap: FileMap
+    ) => {
         let keys = Object.keys(filemap);
         return Promise.mapSeries(keys, (key) => {
             return this.makeAndUpload(remoteDir, key, filemap[key]);
         });
-    }
+    };
 
-    private makeDir(newDirectory: string) {
+    private makeDir = (newDirectory: string) => {
         if (this.ftp === null) {
             return Promise.reject("ftp object is null");
         }
@@ -58,15 +61,15 @@ class FtpDeployer extends events.EventEmitter {
         }
 
         return this.ftp.mkdir(newDirectory, true);
-    }
+    };
 
     // Creates a remote directory and uploads all of the files in it
     // Resolves a confirmation message on success
-    private makeAndUpload(
+    private makeAndUpload = (
         config: FtpDeployConfig,
         relDir: string,
         fnames: string[]
-    ) {
+    ) => {
         let newDirectory = upath.join(config.remoteRoot, relDir);
 
         // TODO reconcile FTP types
@@ -102,10 +105,10 @@ class FtpDeployer extends events.EventEmitter {
                     });
             });
         });
-    }
+    };
 
     // connects to the server, Resolves the config on success
-    private connect(config: FtpDeployConfig) {
+    private connect = (config: FtpDeployConfig) => {
         this.ftp = config.sftp ? new PromiseSftp() : new PromiseFtp();
 
         // sftp client does not provide a connection status
@@ -136,22 +139,22 @@ class FtpDeployer extends events.EventEmitter {
                     message: "connect: " + err.message,
                 });
             });
-    }
+    };
 
-    private getConnectionStatus() {
+    private getConnectionStatus = () => {
         // only ftp client provides connection status
         // sftp client connection status is handled using events
         return this.ftp !== null && "getConnectionStatus" in this.ftp
             ? this.ftp.getConnectionStatus()
             : this.connectionStatus;
-    }
+    };
 
-    private handleDisconnect() {
+    private handleDisconnect = () => {
         this.connectionStatus = "disconnected";
-    }
+    };
 
     // creates list of all files to upload and starts upload process
-    private checkLocalAndUpload(config: FtpDeployConfig) {
+    private checkLocalAndUpload = (config: FtpDeployConfig) => {
         try {
             let filemap = lib.parseLocal(
                 config.include,
@@ -170,11 +173,11 @@ class FtpDeployer extends events.EventEmitter {
         } catch (e) {
             return Promise.reject(e);
         }
-    }
+    };
 
     // Deletes remote directory if requested by config
     // Returns config
-    private deleteRemote(config: FtpDeployConfig) {
+    private deleteRemote = (config: FtpDeployConfig) => {
         if (config.deleteRemote && this.ftp !== null) {
             return lib
                 .deleteDir(this.ftp, config.remoteRoot)
@@ -192,12 +195,12 @@ class FtpDeployer extends events.EventEmitter {
                 });
         }
         return Promise.resolve(config);
-    }
+    };
 
-    public deploy(
+    public deploy = (
         config: FtpDeployConfig,
-        cb: (err: Error | null, res: unknown) => void
-    ) {
+        cb?: (err: Error | null, res: unknown) => void
+    ) => {
         return lib
             .checkIncludes(config)
             .then(lib.getPassword)
@@ -226,7 +229,7 @@ class FtpDeployer extends events.EventEmitter {
                     return Promise.reject(err);
                 }
             });
-    }
+    };
 }
 
 export default FtpDeployer;

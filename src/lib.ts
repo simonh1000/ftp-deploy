@@ -144,7 +144,9 @@ function deleteDir(ftp: Ftp, dir: string): Promise<string[]> {
                 Promise.mapSeries(
                     fnames,
                     // TODO reconcile FTP types
-                    (fname) => ftp.delete(fname) as Promise<string>
+                    (fname) => {
+                        return ftp.delete(fname) as Promise<string>;
+                    }
                 )
             );
         }
