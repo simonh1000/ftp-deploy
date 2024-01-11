@@ -1,5 +1,5 @@
 import PromiseFtp from "promise-ftp";
-
+import PromiseSftp from "ssh2-sftp-client";
 export interface FtpDeployConfig {
     remoteRoot: string;
     localRoot: string;
@@ -14,4 +14,4 @@ export interface FtpDeployConfig {
 
 export type FileMap = Record<string, string[]>;
 
-export type Ftp = PromiseFtp | PromiseFtp;
+export type Ftp = PromiseFtp | PromiseSftp;

@@ -72,19 +72,26 @@ class FtpDeployer extends events.EventEmitter {
     ) {
         let newDirectory = upath.join(config.remoteRoot, relDir);
 
-        return this.makeDir(newDirectory).then(() => {
+        // TODO reconcile FTP types
+        return (this.makeDir(newDirectory) as Promise<void>).then(() => {
             return Promise.mapSeries(fnames, (fname) => {
                 if (this.ftp === null) {
                     return Promise.reject("ftp object is null");
                 }
+
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
                 let tmp = fs.readFileSync(tmpFileName);
                 this.eventObject["filename"] = upath.join(relDir, fname);
 
                 this.emit("uploading", this.eventObject);
 
-                return this.ftp
-                    .put(tmp, upath.join(config.remoteRoot, relDir, fname))
+                // TODO reconcile FTP types
+                return (
+                    this.ftp.put(
+                        tmp,
+                        upath.join(config.remoteRoot, relDir, fname)
+                    ) as Promise<void>
+                )
                     .then(() => {
                         this.eventObject.transferredFileCount++;
                         this.emit("uploaded", this.eventObject);
@@ -105,15 +112,15 @@ class FtpDeployer extends events.EventEmitter {
         this.ftp = config.sftp ? new PromiseSftp() : new PromiseFtp();
 
         // sftp client does not provide a connection status
-        // so instead provide one ourselfs
+        // so instead provide one ourselves
         if (this.ftp instanceof PromiseSftp) {
             this.connectionStatus = "disconnected";
             this.ftp.on("end", this.handleDisconnect);
             this.ftp.on("close", this.handleDisconnect);
         }
 
-        return this.ftp
-            .connect(config)
+        // TODO reconcile FTP types
+        return (this.ftp.connect(config) as Promise<string>)
             .then((serverMessage: string) => {
                 this.emit("log", "Connected to: " + config.host);
                 this.emit("log", "Connected: Server message: " + serverMessage);
@@ -171,7 +178,7 @@ class FtpDeployer extends events.EventEmitter {
     // Deletes remote directory if requested by config
     // Returns config
     private deleteRemote(config: FtpDeployConfig) {
-        if (config.deleteRemote) {
+        if (config.deleteRemote && this.ftp !== null) {
             return lib
                 .deleteDir(this.ftp, config.remoteRoot)
                 .then(() => {
@@ -190,7 +197,10 @@ class FtpDeployer extends events.EventEmitter {
         return Promise.resolve(config);
     }
 
-    public deploy(config: FtpDeployConfig, cb) {
+    public deploy(
+        config: FtpDeployConfig,
+        cb: (err: Error | null, res: unknown) => void
+    ) {
         return lib
             .checkIncludes(config)
             .then(lib.getPassword)

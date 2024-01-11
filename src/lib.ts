@@ -1,3 +1,4 @@
+import * as FtpClient from "ftp";
 import fs from "fs";
 import path from "path";
 import util from "util";
@@ -121,27 +122,38 @@ function countFiles(filemap: FileMap) {
         .length;
 }
 
-function deleteDir(ftp: Ftp, dir: string) {
-    return ftp.list(dir).then((lst) => {
-        let dirNames = lst
-            .filter((f) => f.type == "d" && f.name != ".." && f.name != ".")
-            .map((f) => path.posix.join(dir, f.name));
+function deleteDir(ftp: Ftp, dir: string): Promise<string[]> {
+    // TODO reconcile FTP types
+    return (ftp.list(dir) as Promise<FtpClient.ListingElement[]>).then(
+        (lst) => {
+            let dirNames = lst
+                .filter((f) => f.type == "d" && f.name != ".." && f.name != ".")
+                .map((f) => path.posix.join(dir, f.name));
 
-        let fnames = lst
-            .filter((f) => f.type != "d")
-            .map((f) => path.posix.join(dir, f.name));
+            let fnames = lst
+                .filter((f) => f.type != "d")
+                .map((f) => path.posix.join(dir, f.name));
 
-        // delete sub-directories and then all files
-        return Promise.mapSeries(dirNames, (dirName) => {
-            // deletes everything in sub-directory, and then itself
-            return deleteDir(ftp, dirName).then(() => ftp.rmdir(dirName));
-        }).then(() => Promise.mapSeries(fnames, (fname) => ftp.delete(fname)));
-    });
+            // delete sub-directories and then all files
+            return Promise.mapSeries(dirNames, (dirName) => {
+                // deletes everything in sub-directory, and then itself
+                return deleteDir(ftp, dirName).then(
+                    () => ftp.rmdir(dirName) as Promise<void>
+                );
+            }).then(() =>
+                Promise.mapSeries(
+                    fnames,
+                    // TODO reconcile FTP types
+                    (fname) => ftp.delete(fname) as Promise<string>
+                )
+            );
+        }
+    );
 }
 
 function mkDirExists(ftp: Ftp, dir: string) {
     // Make the directory using recursive expand
-    return ftp.mkdir(dir, true).catch((err) => {
+    return (ftp.mkdir(dir, true) as Promise<void>).catch((err) => {
         if (err.message.startsWith("EEXIST")) {
             return Promise.resolve();
         } else {
@@ -152,7 +164,7 @@ function mkDirExists(ftp: Ftp, dir: string) {
     });
 }
 
-module.exports = {
+export default {
     checkIncludes: checkIncludes,
     getPassword: getPassword,
     parseLocal: parseLocal,
