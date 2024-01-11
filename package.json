@@ -7,7 +7,9 @@
     "scripts": {
         "test": "cross-env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -r ts-node/register '**/*spec.ts'",
         "server": "ts-node test/server.ts",
-        "build": "npx tsc -p tsconfig.json"
+        "clean": "rm -rf ./dist",
+        "build": "npm run clean && npx tsc -p tsconfig.build.json",
+        "prepublish": "npm run clean && npm run build"
     },
     "dependencies": {
         "bluebird": "^3.7.2",
