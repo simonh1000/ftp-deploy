@@ -7,7 +7,7 @@ export interface FtpDeployConfig {
     include: string[];
     user: string;
     port: number;
-    continueOnError?: boolean;
+    // continueOnError?: boolean;
     deleteRemote?: boolean;
     exclude?: string[];
     sftp?: boolean;
