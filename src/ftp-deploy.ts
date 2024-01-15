@@ -162,7 +162,7 @@ class FtpDeployer extends events.EventEmitter {
                 config.localRoot,
                 "/"
             );
-            // console.log(filemap);
+
             this.emit(
                 "log",
                 "Files found to upload: " + JSON.stringify(filemap)

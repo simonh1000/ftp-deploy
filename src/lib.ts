@@ -141,13 +141,10 @@ function deleteDir(ftp: Ftp, dir: string): Promise<string[]> {
                     () => ftp.rmdir(dirName) as Promise<void>
                 );
             }).then(() =>
-                Promise.mapSeries(
-                    fnames,
+                Promise.mapSeries(fnames, (fname) => {
                     // TODO reconcile FTP types
-                    (fname) => {
-                        return ftp.delete(fname) as Promise<string>;
-                    }
-                )
+                    return ftp.delete(fname) as unknown as Promise<string>;
+                })
             );
         }
     );
