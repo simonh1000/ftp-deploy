@@ -1,14 +1,14 @@
-"use strict";
+import upath from "upath";
+import events from "events";
+import fs from "fs";
+import PromiseFtp from "promise-ftp";
+import PromiseSftp from "ssh2-sftp-client";
+import Promise from "bluebird";
 
-const upath = require("upath");
-const util = require("util");
-const events = require("events");
-const Promise = require("bluebird");
-const fs = require("fs");
+import lib from "./lib";
+import { EventObject, FileMap, Ftp, FtpDeployConfig } from "./types";
 
-var PromiseFtp = require("promise-ftp");
-var PromiseSftp = require("ssh2-sftp-client");
-const lib = require("./lib");
+export * from "./types";
 
 /* interim structure
 {
@@ -20,52 +20,81 @@ const lib = require("./lib");
 }
 */
 
-const FtpDeployer = function () {
-    // The constructor for the super class.
-    events.EventEmitter.call(this);
-    this.ftp = null;
-    this.eventObject = {
-        totalFilesCount: 0,
-        transferredFileCount: 0,
-        filename: "",
-    };
+class FtpDeployer extends events.EventEmitter {
+    connectionStatus: undefined | "disconnected" | "connected";
+    ftp: Ftp | null;
+    eventObject: EventObject;
 
-    this.makeAllAndUpload = function (remoteDir, filemap) {
+    // The constructor for the super class.
+    // TODO: Add config: FtpDeployConfig as an argument to prevent future null checks on this.ftp
+    constructor() {
+        super();
+
+        // TODO: remove if redundant to super()
+        // events.EventEmitter.call(this);
+        this.ftp = null;
+        this.eventObject = {
+            totalFilesCount: 0,
+            transferredFileCount: 0,
+            filename: "",
+            error: undefined,
+        };
+    }
+
+    private makeAllAndUpload = (config: FtpDeployConfig, filemap: FileMap) => {
         let keys = Object.keys(filemap);
         return Promise.mapSeries(keys, (key) => {
-            // console.log("Processing", key, filemap[key]);
-            return this.makeAndUpload(remoteDir, key, filemap[key]);
+            return this.makeAndUpload(config, key, filemap[key]);
         });
     };
 
-    this.makeDir = function (newDirectory) {
+    private makeDir = (newDirectory: string) => {
+        if (this.ftp === null) {
+            return Promise.reject("ftp object is null");
+        }
+
         if (newDirectory === "/") {
             return Promise.resolve("unused");
-        } else {
-            return this.ftp.mkdir(newDirectory, true);
         }
+
+        return this.ftp.mkdir(newDirectory, true);
     };
+
     // Creates a remote directory and uploads all of the files in it
     // Resolves a confirmation message on success
-    this.makeAndUpload = (config, relDir, fnames) => {
+    private makeAndUpload = (
+        config: FtpDeployConfig,
+        relDir: string,
+        fnames: string[]
+    ) => {
         let newDirectory = upath.join(config.remoteRoot, relDir);
-        return this.makeDir(newDirectory, true).then(() => {
-            // console.log("newDirectory", newDirectory);
+
+        // TODO reconcile FTP types
+        return (this.makeDir(newDirectory) as Promise<void>).then(() => {
             return Promise.mapSeries(fnames, (fname) => {
+                if (this.ftp === null) {
+                    return Promise.reject("ftp object is null");
+                }
+
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
                 let tmp = fs.readFileSync(tmpFileName);
                 this.eventObject["filename"] = upath.join(relDir, fname);
 
                 this.emit("uploading", this.eventObject);
 
-                return this.ftp
-                    .put(tmp, upath.join(config.remoteRoot, relDir, fname))
+                // TODO reconcile FTP types
+                return (
+                    this.ftp.put(
+                        tmp,
+                        upath.join(config.remoteRoot, relDir, fname)
+                    ) as Promise<void>
+                )
                     .then(() => {
                         this.eventObject.transferredFileCount++;
                         this.emit("uploaded", this.eventObject);
                         return Promise.resolve("uploaded " + tmpFileName);
                     })
-                    .catch((err) => {
+                    .catch((err: Error) => {
                         this.eventObject["error"] = err;
                         this.emit("upload-error", this.eventObject);
                         // if continue on error....
@@ -76,20 +105,20 @@ const FtpDeployer = function () {
     };
 
     // connects to the server, Resolves the config on success
-    this.connect = (config) => {
+    private connect = (config: FtpDeployConfig) => {
         this.ftp = config.sftp ? new PromiseSftp() : new PromiseFtp();
 
         // sftp client does not provide a connection status
-        // so instead provide one ourselfs
-        if (config.sftp) {
+        // so instead provide one ourselves
+        if (this.ftp instanceof PromiseSftp) {
             this.connectionStatus = "disconnected";
             this.ftp.on("end", this.handleDisconnect);
             this.ftp.on("close", this.handleDisconnect);
         }
 
-        return this.ftp
-            .connect(config)
-            .then((serverMessage) => {
+        // TODO reconcile FTP types
+        return (this.ftp.connect(config) as Promise<string>)
+            .then((serverMessage: string) => {
                 this.emit("log", "Connected to: " + config.host);
                 this.emit("log", "Connected: Server message: " + serverMessage);
 
@@ -101,36 +130,36 @@ const FtpDeployer = function () {
 
                 return config;
             })
-            .catch((err) => {
+            .catch((err: Error) => {
                 return Promise.reject({
-                    code: err.code,
+                    code: "code" in err ? err.code : "unknown",
                     message: "connect: " + err.message,
                 });
             });
     };
 
-    this.getConnectionStatus = () => {
+    private getConnectionStatus = () => {
         // only ftp client provides connection status
         // sftp client connection status is handled using events
-        return typeof this.ftp.getConnectionStatus === "function"
+        return this.ftp !== null && "getConnectionStatus" in this.ftp
             ? this.ftp.getConnectionStatus()
             : this.connectionStatus;
     };
 
-    this.handleDisconnect = () => {
+    private handleDisconnect = () => {
         this.connectionStatus = "disconnected";
     };
 
     // creates list of all files to upload and starts upload process
-    this.checkLocalAndUpload = (config) => {
+    private checkLocalAndUpload = (config: FtpDeployConfig) => {
         try {
             let filemap = lib.parseLocal(
                 config.include,
-                config.exclude,
+                config.exclude ?? [],
                 config.localRoot,
                 "/"
             );
-            // console.log(filemap);
+
             this.emit(
                 "log",
                 "Files found to upload: " + JSON.stringify(filemap)
@@ -145,15 +174,15 @@ const FtpDeployer = function () {
 
     // Deletes remote directory if requested by config
     // Returns config
-    this.deleteRemote = (config) => {
-        if (config.deleteRemote) {
+    private deleteRemote = (config: FtpDeployConfig) => {
+        if (config.deleteRemote && this.ftp !== null) {
             return lib
                 .deleteDir(this.ftp, config.remoteRoot)
                 .then(() => {
                     this.emit("log", "Deleted directory: " + config.remoteRoot);
                     return config;
                 })
-                .catch((err) => {
+                .catch((err: Error) => {
                     this.emit(
                         "log",
                         "Deleting failed, trying to continue: " +
@@ -165,7 +194,10 @@ const FtpDeployer = function () {
         return Promise.resolve(config);
     };
 
-    this.deploy = function (config, cb) {
+    public deploy = (
+        config: FtpDeployConfig,
+        cb?: (err: Error | null, res: unknown) => void
+    ) => {
         return lib
             .checkIncludes(config)
             .then(lib.getPassword)
@@ -173,6 +205,10 @@ const FtpDeployer = function () {
             .then(this.deleteRemote)
             .then(this.checkLocalAndUpload)
             .then((res) => {
+                if (this.ftp === null) {
+                    return Promise.reject("ftp object is null");
+                }
+
                 this.ftp.end();
                 if (typeof cb == "function") {
                     cb(null, res);
@@ -180,7 +216,7 @@ const FtpDeployer = function () {
                     return Promise.resolve(res);
                 }
             })
-            .catch((err) => {
+            .catch((err: Error) => {
                 console.log("Err", err.message);
                 if (this.ftp && this.getConnectionStatus() != "disconnected")
                     this.ftp.end();
@@ -191,8 +227,6 @@ const FtpDeployer = function () {
                 }
             });
     };
-};
+}
 
-util.inherits(FtpDeployer, events.EventEmitter);
-
-module.exports = FtpDeployer;
+export default FtpDeployer;

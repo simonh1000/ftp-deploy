@@ -1,16 +1,17 @@
-const fs = require("fs");
-const path = require("path");
-const util = require("util");
-const Promise = require("bluebird");
+import * as FtpClient from "ftp";
+import fs from "fs";
+import path from "path";
+import util from "util";
+import Promise from "bluebird";
+import read from "read";
+import { minimatch } from "minimatch";
+import { FileMap, Ftp, FtpDeployConfig } from "./types";
 
-const read = require("read");
 const readP = util.promisify(read);
-
-const { minimatch } = require("minimatch");
 
 // P H A S E  0
 
-function checkIncludes(config) {
+function checkIncludes(config: FtpDeployConfig) {
     config.exclude = config.exclude || [];
     if (!config.include || !config.include.length) {
         return Promise.reject({
@@ -22,7 +23,7 @@ function checkIncludes(config) {
     }
 }
 
-function getPassword(config) {
+function getPassword(config: FtpDeployConfig) {
     if (config.password) {
         return Promise.resolve(config);
     } else {
@@ -45,8 +46,12 @@ function getPassword(config) {
 
 // Analysing local firstory
 
-function canIncludePath(includes, excludes, filePath) {
-    let go = (acc, item) =>
+function canIncludePath(
+    includes: string[],
+    excludes: string[],
+    filePath: string
+) {
+    let go = (acc: boolean, item: string) =>
         acc || minimatch(filePath, item, { matchBase: true });
     let canInclude = includes.reduce(go, false);
 
@@ -54,19 +59,24 @@ function canIncludePath(includes, excludes, filePath) {
     if (canInclude) {
         // if any excludes match return false
         if (excludes) {
-            let go2 = (acc, item) =>
+            let go2 = (acc: boolean, item: string) =>
                 acc && !minimatch(filePath, item, { matchBase: true });
             canInclude = excludes.reduce(go2, true);
         }
     }
-    // console.log("canIncludePath", include, filePath, res);
+
     return canInclude;
 }
 
 // A method for parsing the source location and storing the information into a suitably formated object
-function parseLocal(includes, excludes, localRootDir, relDir) {
+function parseLocal(
+    includes: string[],
+    excludes: string[],
+    localRootDir: string,
+    relDir: string
+) {
     // reducer
-    let handleItem = function (acc, item) {
+    const handleItem = function (acc: FileMap, item: string) {
         const currItem = path.join(fullDir, item);
         const newRelDir = path.relative(localRootDir, currItem);
 
@@ -78,7 +88,8 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
                     delete tmp[key];
                 }
             }
-            return Object.assign(acc, tmp);
+            const newAcc: FileMap = Object.assign(acc, tmp);
+            return newAcc;
         } else {
             // currItem is a file
             // acc[relDir] is always created at previous iteration
@@ -100,38 +111,48 @@ function parseLocal(includes, excludes, localRootDir, relDir) {
     // Iterate through the contents of the `fullDir` of the current iteration
     const files = fs.readdirSync(fullDir);
     // Add empty array, which may get overwritten by subsequent iterations
-    let acc = {};
+    let acc: FileMap = {};
     acc[relDir] = [];
     const res = files.reduce(handleItem, acc);
     return res;
 }
 
-function countFiles(filemap) {
+function countFiles(filemap: FileMap) {
     return Object.values(filemap).reduce((acc, item) => acc.concat(item))
         .length;
 }
 
-function deleteDir(ftp, dir) {
-    return ftp.list(dir).then((lst) => {
-        let dirNames = lst
-            .filter((f) => f.type == "d" && f.name != ".." && f.name != ".")
-            .map((f) => path.posix.join(dir, f.name));
+function deleteDir(ftp: Ftp, dir: string): Promise<string[]> {
+    // TODO reconcile FTP types
+    return (ftp.list(dir) as Promise<FtpClient.ListingElement[]>).then(
+        (lst) => {
+            let dirNames = lst
+                .filter((f) => f.type == "d" && f.name != ".." && f.name != ".")
+                .map((f) => path.posix.join(dir, f.name));
 
-        let fnames = lst
-            .filter((f) => f.type != "d")
-            .map((f) => path.posix.join(dir, f.name));
+            let fnames = lst
+                .filter((f) => f.type != "d")
+                .map((f) => path.posix.join(dir, f.name));
 
-        // delete sub-directories and then all files
-        return Promise.mapSeries(dirNames, (dirName) => {
-            // deletes everything in sub-directory, and then itself
-            return deleteDir(ftp, dirName).then(() => ftp.rmdir(dirName));
-        }).then(() => Promise.mapSeries(fnames, (fname) => ftp.delete(fname)));
-    });
+            // delete sub-directories and then all files
+            return Promise.mapSeries(dirNames, (dirName) => {
+                // deletes everything in sub-directory, and then itself
+                return deleteDir(ftp, dirName).then(
+                    () => ftp.rmdir(dirName) as Promise<void>
+                );
+            }).then(() =>
+                Promise.mapSeries(fnames, (fname) => {
+                    // TODO reconcile FTP types
+                    return ftp.delete(fname) as unknown as Promise<string>;
+                })
+            );
+        }
+    );
 }
 
-mkDirExists = (ftp, dir) => {
+function mkDirExists(ftp: Ftp, dir: string) {
     // Make the directory using recursive expand
-    return ftp.mkdir(dir, true).catch((err) => {
+    return (ftp.mkdir(dir, true) as Promise<void>).catch((err) => {
         if (err.message.startsWith("EEXIST")) {
             return Promise.resolve();
         } else {
@@ -140,9 +161,9 @@ mkDirExists = (ftp, dir) => {
             return Promise.reject(err);
         }
     });
-};
+}
 
-module.exports = {
+export default {
     checkIncludes: checkIncludes,
     getPassword: getPassword,
     parseLocal: parseLocal,

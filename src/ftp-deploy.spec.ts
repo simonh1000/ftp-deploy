@@ -1,17 +1,14 @@
-"use strict";
 // Mocha tests. https://mochajs.org/#working-with-promises
 
-const path = require("path");
-const fs = require("fs");
-const utils = require("util");
+import path from "path";
+import fs from "fs";
+import utils from "util";
+// @ts-ignore "delete" does not have declaration file
+import del from "delete";
 
-// var assert = require("assert");
+import FtpDeploy from "./ftp-deploy";
 
 const statP = utils.promisify(fs.stat);
-
-const del = require("delete");
-const FtpDeploy = require("./ftp-deploy");
-const { assert } = require("console");
 
 const config = {
     user: "anonymous",
@@ -35,9 +32,9 @@ describe("ftp-deploy.spec: deploy tests", () => {
             .then(() => {
                 return d.deploy(configError);
             })
-            .catch((err) => {
+            .catch((err: Error) => {
                 // Should reject if file does not exist
-                if (err.code === "ECONNREFUSED") {
+                if ("code" in err && err.code === "ECONNREFUSED") {
                     return Promise.resolve("got expected error");
                 } else {
                     return Promise.reject(err);
@@ -51,8 +48,8 @@ describe("ftp-deploy.spec: deploy tests", () => {
                 let c2 = Object.assign({}, config, { include: [] });
                 return d.deploy(c2);
             })
-            .catch((err) => {
-                if (err.code === "NoIncludes") {
+            .catch((err: Error) => {
+                if ("code" in err && err.code === "NoIncludes") {
                     return Promise.resolve("got expected error");
                 } else {
                     return Promise.reject(err);
