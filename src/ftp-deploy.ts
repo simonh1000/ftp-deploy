@@ -41,13 +41,10 @@ class FtpDeployer extends events.EventEmitter {
         };
     }
 
-    private makeAllAndUpload = (
-        remoteDir: FtpDeployConfig,
-        filemap: FileMap
-    ) => {
+    private makeAllAndUpload = (config: FtpDeployConfig, filemap: FileMap) => {
         let keys = Object.keys(filemap);
         return Promise.mapSeries(keys, (key) => {
-            return this.makeAndUpload(remoteDir, key, filemap[key]);
+            return this.makeAndUpload(config, key, filemap[key]);
         });
     };
 
