@@ -116,6 +116,13 @@ and then in another console run the tests:
 npm test
 ```
 
+## Release
+
+```sh
+npm version patch
+npm publish
+```
+
 ## ToDo
 
 -   re-enable continueOnError
