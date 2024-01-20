@@ -3,7 +3,6 @@
 const upath = require("upath");
 const util = require("util");
 const events = require("events");
-const Promise = require("bluebird");
 const fs = require("fs");
 
 var PromiseFtp = require("promise-ftp");
@@ -32,7 +31,7 @@ const FtpDeployer = function () {
 
     this.makeAllAndUpload = function (remoteDir, filemap) {
         let keys = Object.keys(filemap);
-        return Promise.mapSeries(keys, (key) => {
+        return lib.mapSeries(keys, (key) => {
             // console.log("Processing", key, filemap[key]);
             return this.makeAndUpload(remoteDir, key, filemap[key]);
         });
@@ -51,7 +50,7 @@ const FtpDeployer = function () {
         let newDirectory = upath.join(config.remoteRoot, relDir);
         return this.makeDir(newDirectory, true).then(() => {
             // console.log("newDirectory", newDirectory);
-            return Promise.mapSeries(fnames, (fname) => {
+            return lib.mapSeries(fnames, (fname) => {
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
                 let fileContents = fs.readFileSync(tmpFileName);
                 this.eventObject["filename"] = upath.join(relDir, fname);
