@@ -2,8 +2,6 @@
 
 A Node.js package to help with deploying code. Ftp a folder from your local disk to a remote ftp destination. Does not delete from destination directory.
 
-Version 2.0.0 is an almost complete re-write to use promises and [promise-ftp](https://github.com/realtymaps/promise-ftp) instead of jsftp. The one breaking change is listed in the notes of Usage section.
-
 ## Installation
 
 ```js
@@ -121,6 +119,7 @@ npm test
 ```sh
 npm version patch
 npm publish
+git push origin vx.y.z
 ```
 
 ## ToDo
