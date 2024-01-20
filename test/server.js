@@ -1,10 +1,9 @@
 const FtpSrv = require("ftp-srv");
+const path = require("upath");
 
 // Using non-standard port
 const port = 2121;
-
-const homeDir = __dirname + "/remote";
-// console.log("serving", homeDir);
+const homeDir = path.join(__dirname, "remote");
 
 const options = {
     url: "ftp://127.0.0.1:" + port,

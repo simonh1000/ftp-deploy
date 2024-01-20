@@ -1,5 +1,5 @@
 const fs = require("fs");
-const path = require("path");
+const path = require("upath");
 const util = require("util");
 const Promise = require("bluebird");
 

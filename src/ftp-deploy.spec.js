@@ -1,17 +1,14 @@
 "use strict";
 // Mocha tests. https://mochajs.org/#working-with-promises
 
-const path = require("path");
+const path = require("upath");
 const fs = require("fs");
 const utils = require("util");
-
-// var assert = require("assert");
 
 const statP = utils.promisify(fs.stat);
 
 const del = require("delete");
 const FtpDeploy = require("./ftp-deploy");
-const { assert } = require("console");
 
 const config = {
     user: "anonymous",
@@ -67,7 +64,7 @@ describe("ftp-deploy.spec: deploy tests", () => {
             })
             .then(() => {
                 // Will reject if file does not exist
-                return statP(remoteDir + "/test-inside-root.txt");
+                return statP(path.join(remoteDir, "test-inside-root.txt"));
             });
     });
     it("should put a dot file", () => {
@@ -79,7 +76,7 @@ describe("ftp-deploy.spec: deploy tests", () => {
             })
             .then(() => {
                 // Will reject if file does not exist
-                return statP(remoteDir + "/.testfile");
+                return statP(path.join(remoteDir, ".testfile"));
             });
     });
 });
