@@ -6,7 +6,7 @@ const events = require("events");
 const fs = require("fs");
 
 var PromiseFtp = require("promise-ftp");
-var sftpClient = require("ssh2-sftp-client");
+var PromiseSftp = require("ssh2-sftp-client");
 const lib = require("./lib");
 
 /* interim structure
@@ -52,7 +52,7 @@ const FtpDeployer = function () {
             // console.log("newDirectory", newDirectory);
             return lib.mapSeries(fnames, (fname) => {
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
-                let fileContents = fs.readFileSync(tmpFileName);
+                let tmpFileContents = fs.readFileSync(tmpFileName);
                 this.eventObject["filename"] = upath.join(relDir, fname);
 
                 this.emit("uploading", this.eventObject);
@@ -62,7 +62,7 @@ const FtpDeployer = function () {
                 console.log({ putPath });
 
                 return this.ftp
-                    .put(fileContents, putPath)
+                    .put(tmpFileContents, putPath)
                     .then(() => {
                         this.eventObject.transferredFileCount++;
                         this.emit("uploaded", this.eventObject);
@@ -80,7 +80,7 @@ const FtpDeployer = function () {
 
     // connects to the server, Resolves the config on success
     this.connect = (config) => {
-        this.ftp = config.sftp ? new sftpClient() : new PromiseFtp();
+        this.ftp = config.sftp ? new PromiseSftp() : new PromiseFtp();
 
         // sftp client does not provide a connection status
         // so instead provide one ourselfs
@@ -93,7 +93,7 @@ const FtpDeployer = function () {
         return this.ftp
             .connect(config)
             .then((serverMessage) => {
-                // no param for sftp!
+                // ftp returns the servr messsage, but sftp does not!
                 this.emit("log", "Connected to: " + config.host);
                 if (!config.sftp) {
                     // we do have a server message for non-sftp

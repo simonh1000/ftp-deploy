@@ -18,7 +18,6 @@
     "devDependencies": {
         "chai": "^4.3.7",
         "delete": "^1.1.0",
-        "dotenv": "^16.3.1",
         "ftp-srv": "^4.6.2",
         "mocha": "^9.1.3"
     },
