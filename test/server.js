@@ -14,13 +14,13 @@ const options = {
 
 const ftpServer = new FtpSrv(options);
 
-ftpServer.on("login", (data, resolve, reject) => {
+ftpServer.on("login", (data, resolve) => {
     console.log("[login] Connection by", data.username);
     console.log("[login] Setting home dir to:", homeDir);
     resolve({ root: homeDir });
 });
 
-ftpServer.on("client-error", ({ connection, context, error }) => {
+ftpServer.on("client-error", ({ context, error }) => {
     console.log("**client-error**");
     console.log(context);
     console.log(error);

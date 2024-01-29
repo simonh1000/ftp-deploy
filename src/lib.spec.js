@@ -3,8 +3,6 @@
 const path = require("upath");
 var assert = require("assert");
 
-const expect = require("chai").expect;
-
 const lib = require("./lib");
 
 describe("canIncludePath", () => {
