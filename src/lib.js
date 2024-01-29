@@ -138,7 +138,7 @@ function mkDirExists(ftp, dir) {
             return Promise.reject(err);
         }
     });
-};
+}
 
 /**
  * Applies the mapper function to each item in the array in series.
