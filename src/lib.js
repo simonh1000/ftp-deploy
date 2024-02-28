@@ -3,7 +3,6 @@ const path = require("upath");
 const util = require("util");
 
 const read = require("read");
-const readP = util.promisify(read);
 
 const { minimatch } = require("minimatch");
 
@@ -35,7 +34,7 @@ function getPassword(config) {
             default: "",
             silent: true,
         };
-        return readP(options).then((res) => {
+        return read(options).then((res) => {
             let config2 = Object.assign(config, { password: res });
             return config2;
         });
@@ -157,10 +156,9 @@ function mapSeries(array, mapper) {
         // Chain a new Promise to the result
         result = result.then(() => {
             // Apply the mapper function to the current item
-            return mapper(item, index, array)
-                .then(res => {
-                    output.push(res);
-                });
+            return mapper(item, index, array).then((res) => {
+                output.push(res);
+            });
         });
     });
 

@@ -118,6 +118,7 @@ npm test
 
 ```sh
 npm version patch
+git commit -m 'bump'
 npm publish
 git push origin vx.y.z
 ```
