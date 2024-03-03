@@ -33,6 +33,8 @@ const config = {
         "node_modules/**/.*",
         ".git/**",
     ],
+    // Preserve files that should be kept/ignored on remote directory
+    preserve: [".htaccess"],
     // delete ALL existing files at destination before uploading, if true
     deleteRemote: false,
     // Passive mode is forced (EPSV command is not sent)

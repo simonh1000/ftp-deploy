@@ -18,6 +18,7 @@ const config = {
     localRoot: path.join(__dirname, "../test/local"),
     remoteRoot: "/ftp",
     exclude: [],
+    preserve: [".htaccess"],
     include: ["folderA/**/*", "test-inside-root.txt"],
     debugMode: true,
 };
