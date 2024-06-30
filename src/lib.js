@@ -1,6 +1,5 @@
 const fs = require("fs");
 const path = require("upath");
-const util = require("util");
 
 const read = require("read");
 
@@ -127,7 +126,7 @@ function deleteDir(ftp, dir) {
     });
 }
 
-mkDirExists = (ftp, dir) => {
+function mkDirExists(ftp, dir) {
     // Make the directory using recursive expand
     return ftp.mkdir(dir, true).catch((err) => {
         if (err.message.startsWith("EEXIST")) {
@@ -138,7 +137,7 @@ mkDirExists = (ftp, dir) => {
             return Promise.reject(err);
         }
     });
-};
+}
 
 /**
  * Applies the mapper function to each item in the array in series.
