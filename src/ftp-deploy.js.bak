@@ -3,6 +3,7 @@
 const upath = require("upath");
 const util = require("util");
 const events = require("events");
+const Promise = require("bluebird");
 const fs = require("fs");
 
 var PromiseFtp = require("promise-ftp");
@@ -31,7 +32,7 @@ const FtpDeployer = function () {
 
     this.makeAllAndUpload = function (remoteDir, filemap) {
         let keys = Object.keys(filemap);
-        return lib.mapSeries(keys, (key) => {
+        return Promise.mapSeries(keys, (key) => {
             // console.log("Processing", key, filemap[key]);
             return this.makeAndUpload(remoteDir, key, filemap[key]);
         });
@@ -50,7 +51,7 @@ const FtpDeployer = function () {
         let newDirectory = upath.join(config.remoteRoot, relDir);
         return this.makeDir(newDirectory, true).then(() => {
             // console.log("newDirectory", newDirectory);
-            return lib.mapSeries(fnames, (fname) => {
+            return Promise.mapSeries(fnames, (fname) => {
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
                 let tmp = fs.readFileSync(tmpFileName);
                 this.eventObject["filename"] = upath.join(relDir, fname);
@@ -147,7 +148,12 @@ const FtpDeployer = function () {
     this.deleteRemote = (config) => {
         if (config.deleteRemote) {
             const preserve = config.preserve?.length ? config.preserve.map(p => config.remoteRoot + p) : [];
-            return lib.deleteDir(this.ftp, config.remoteRoot, preserve)
+            return lib
+<<<<<<< HEAD
+                .deleteDir(this.ftp, config.remoteRoot, config.preserve)
+=======
+                .deleteDir(this.ftp, config.remoteRoot, preserve)
+>>>>>>> b921f362763aa7ae4243fddc464d189d4230ddd8
                 .then(() => {
                     this.emit("log", "Deleted directory: " + config.remoteRoot);
                     return config;

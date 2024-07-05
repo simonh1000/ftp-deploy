@@ -1,14 +1,17 @@
 const fs = require("fs");
-const path = require("upath");
+const path = require("path");
+const util = require("util");
+const Promise = require("bluebird");
 
 const read = require("read");
+const readP = util.promisify(read);
 
 const { minimatch } = require("minimatch");
 
 // P H A S E  0
 
 function checkIncludes(config) {
-    config.exclude = config.exclude || [];
+    config.excludes = config.excludes || [];
     if (!config.include || !config.include.length) {
         return Promise.reject({
             code: "NoIncludes",
@@ -33,7 +36,7 @@ function getPassword(config) {
             default: "",
             silent: true,
         };
-        return read(options).then((res) => {
+        return readP(options).then((res) => {
             let config2 = Object.assign(config, { password: res });
             return config2;
         });
@@ -112,15 +115,23 @@ function deleteDir(ftp, dir, preserve = []) {
     return ftp.list(dir).then(lst => {
         // console.log(dir, lst.map(l => dir + l.name));
         let dirNames = lst
+<<<<<<< HEAD
           .filter(f => f.type == "d" && f.name != ".." && f.name != "." && !preserve.includes(f.name))
           .map(f => path.posix.join(dir, f.name));
 
         let fnames = lst
           .filter(f => f.type != "d" && !preserve.includes(f.name))
+=======
+          .filter(f => f.type === "d" && f.name !== ".." && f.name !== ".")
+          .map(f => path.posix.join(dir, f.name));
+
+        let fnames = lst
+          .filter(f => f.type !== "d")
+>>>>>>> b921f362763aa7ae4243fddc464d189d4230ddd8
           .map(f => path.posix.join(dir, f.name));
 
         // delete subdirectories and then all files
-        return mapSeries(dirNames, dirName => {
+        return Promise.mapSeries(dirNames, dirName => {
             const preserveAllFilesOnDir = preserve.find(p => p === dirName);
             const preserveDir = preserveAllFilesOnDir || preserve.find(p => p.startsWith(dirName + '/'));
             // deletes everything in subdirectory if not preserved
@@ -131,7 +142,7 @@ function deleteDir(ftp, dir, preserve = []) {
                     }
                 });
             }
-        }).then(() => mapSeries(fnames, fname => {
+        }).then(() => Promise.mapSeries(fnames, fname => {
             const preserveFile = preserve.find(p => {
                 return p === fname
             });
@@ -143,7 +154,7 @@ function deleteDir(ftp, dir, preserve = []) {
     });
 }
 
-function mkDirExists(ftp, dir) {
+mkDirExists = (ftp, dir) => {
     // Make the directory using recursive expand
     return ftp.mkdir(dir, true).catch((err) => {
         if (err.message.startsWith("EEXIST")) {
@@ -154,33 +165,7 @@ function mkDirExists(ftp, dir) {
             return Promise.reject(err);
         }
     });
-}
-
-/**
- * Applies the mapper function to each item in the array in series.
- * @param {Array} array - The array to map over.
- * @param {Function} mapper - The mapping function.
- * @returns {Promise<Array>} A promise that resolves with the new array.
- */
-function mapSeries(array, mapper) {
-    // Initialize a resolved Promise
-    let result = Promise.resolve();
-    // Empty array to store the results
-    const output = [];
-
-    array.forEach((item, index) => {
-        // Chain a new Promise to the result
-        result = result.then(() => {
-            // Apply the mapper function to the current item
-            return mapper(item, index, array).then((res) => {
-                output.push(res);
-            });
-        });
-    });
-
-    // Return a Promise that resolves with the output array
-    return result.then(() => output);
-}
+};
 
 module.exports = {
     checkIncludes: checkIncludes,
@@ -190,5 +175,4 @@ module.exports = {
     countFiles: countFiles,
     mkDirExists: mkDirExists,
     deleteDir: deleteDir,
-    mapSeries: mapSeries,
 };
