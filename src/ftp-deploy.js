@@ -91,16 +91,10 @@ const FtpDeployer = function () {
             .connect(config)
             .then((serverMessage) => {
                 // ftp returns the servr messsage, but sftp does not!
-                this.emit("log", "Connected to: " + config.host);
-                if (!config.sftp) {
-                    // we do have a server message for non-sftp
-                    this.emit(
-                        "log",
-                        "Connected: Server message: " + serverMessage
-                    );
-                } else {
-                    this.emit("log", "Connected to SFTP server");
-                }
+                this.emit(
+                    "log",
+                    "Connected to: " + config.host + " " + serverMessage || ""
+                );
 
                 // sftp does not provide a connection status
                 // so instead provide one ourself
@@ -137,7 +131,7 @@ const FtpDeployer = function () {
                 config.include,
                 config.exclude,
                 config.localRoot,
-                "/"
+                "./"
             );
             // console.log(filemap);
             this.emit(
