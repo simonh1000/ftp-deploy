@@ -56,11 +56,7 @@ const FtpDeployer = function () {
                 this.eventObject["filename"] = upath.join(relDir, fname);
 
                 this.emit("uploading", this.eventObject);
-                // FIXME - this only helps at the top level
-                const putPath = upath
-                    .join(config.remoteRoot, relDir, fname)
-                    .slice(1);
-                console.log({ putPath, relDir });
+                const putPath = upath.join(config.remoteRoot, relDir, fname);
 
                 return this.ftp
                     .put(tmpFileContents, putPath)
