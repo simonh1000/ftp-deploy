@@ -52,6 +52,7 @@ const FtpDeployer = function () {
             // console.log("newDirectory", newDirectory);
             return lib.mapSeries(fnames, (fname) => {
                 let tmpFileName = upath.join(config.localRoot, relDir, fname);
+                // read file as Buffer
                 let tmpFileContents = fs.readFileSync(tmpFileName);
                 this.eventObject["filename"] = upath.join(relDir, fname);
 
